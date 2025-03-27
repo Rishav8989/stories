@@ -31,8 +31,7 @@ flutter:
   fonts:
     - family: Merriweather
       fonts:
-        - asset: assets/fonts/Merriweather-Regular.ttf
-        - asset: assets/fonts/Merriweather-VariableFont_opsz,wght.ttf
+        - asset: assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf
           weight: 400 # Default weight for variable font
 
     - family: LibreBaskerville
@@ -41,7 +40,6 @@ flutter:
 
     - family: Nunito
       fonts:
-        - asset: assets/fonts/Nunito-Regular.ttf
         - asset: assets/fonts/Nunito-VariableFont_wght.ttf
           weight: 400
 

@@ -5,13 +5,16 @@ import 'package:stories/routes/app_routes.dart';
 import 'package:stories/utils/user_service.dart';
 
 class AuthController extends GetxController {
-  final PocketBase pb = PocketBase('http://rishavpocket.duckdns.org');
+  final PocketBase pb;
   final UserService userService = Get.find<UserService>();
 
   final RxnString userId = RxnString();
   final RxBool isLoggedIn = false.obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
+
+  // Constructor that requires PocketBase instance
+  AuthController(this.pb);
 
   @override
   void onInit() {
