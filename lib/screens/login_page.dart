@@ -55,14 +55,6 @@ class LoginPage extends GetView<AuthController> {
                       }
                       return null;
                     },
-                    onFieldSubmitted: (value) {
-                      if (formKey.currentState!.validate()) {
-                        controller.login(
-                          emailController.text,
-                          passwordController.text,
-                        );
-                      }
-                    },
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -81,13 +73,13 @@ class LoginPage extends GetView<AuthController> {
                       }
                       return null;
                     },
-                    onFieldSubmitted: (value) {
-                      if (formKey.currentState!.validate()) {
-                        controller.login(
-                          emailController.text,
-                          passwordController.text,
-                        );
-                      }
+                    onFieldSubmitted: (_) {
+                      _submitForm(formKey, emailController, passwordController, controller);
+                    },
+                    textInputAction: TextInputAction.done,
+                    onEditingComplete: () {
+                      // Trigger the login when the user presses "Done" on the keyboard
+                      _submitForm(formKey, emailController, passwordController, controller);
                     },
                   ),
                   const SizedBox(height: 30),
@@ -95,12 +87,7 @@ class LoginPage extends GetView<AuthController> {
                     width: maxWidth,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (formKey.currentState!.validate()) {
-                          controller.login(
-                            emailController.text,
-                            passwordController.text,
-                          );
-                        }
+                        _submitForm(formKey, emailController, passwordController, controller);
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -135,5 +122,14 @@ class LoginPage extends GetView<AuthController> {
         ),
       ),
     );
+  }
+
+  void _submitForm(GlobalKey<FormState> formKey, TextEditingController emailController, TextEditingController passwordController, AuthController controller) {
+    if (formKey.currentState!.validate()) {
+      controller.login(
+        emailController.text,
+        passwordController.text,
+      );
+    }
   }
 }
