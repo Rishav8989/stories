@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/screens/home%20screen/account_page.dart';
 import 'package:stories/screens/home%20screen/create_page.dart';
+import 'package:stories/utils/theme/theme_controller.dart';
+import 'package:stories/utils/theme/app_theme.dart';
 
 import 'package:stories/auth_controller.dart';
 import 'package:stories/screens/home%20screen/discover_page.dart';
 import 'package:stories/widgets/logout_button.dart';
+import 'package:stories/utils/theme/theme_switcher_buttons.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {    
+    final ThemeController themeController = Get.find();
     return GetBuilder<HomeController>(
       init: HomeController(),
       builder: (controller) {
@@ -19,13 +23,7 @@ class HomePage extends StatelessWidget {
           appBar: AppBar(
             title: Text(controller.getTitle()),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'Logout',
-                onPressed: () {
-                  LogoutService.performLogout(Get.find<AuthController>());
-                },
-              ),
+              const ThemeToggleButton(),
             ],
           ),
           body: IndexedStack(
@@ -37,14 +35,13 @@ class HomePage extends StatelessWidget {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            unselectedItemColor: Colors.grey,
-            selectedItemColor: Colors.blue,
+            unselectedItemColor: Theme.of(context).unselectedWidgetColor,
+            selectedItemColor: Theme.of(context).colorScheme.primary,
             onTap: controller.changeTabIndex,
             currentIndex: controller.tabIndex,
             showSelectedLabels: true,
             showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,            
             elevation: 0,
             items: [
               _bottomNavigationBarItem(
