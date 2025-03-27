@@ -9,37 +9,37 @@ ThemeData lightTheme = ThemeData(
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.white,
     foregroundColor: Colors.blue,
-    titleTextStyle: TextStyle(
+    titleTextStyle: const TextStyle(
       color: Colors.blue,
-      fontFamily: GoogleFonts.montserrat().fontFamily, // **Montserrat - Bolder, Modern**
-      fontWeight: FontWeight.w700, // **Bold (Weight 700)** - Even bolder AppBar title
-      fontSize: 22, // Slightly larger AppBar title for more impact
+      fontFamily: 'Merriweather',
+      fontWeight: FontWeight.w700,
+      fontSize: 22,
     ),
     iconTheme: const IconThemeData(color: Colors.blue),
   ),
   drawerTheme: const DrawerThemeData(
     backgroundColor: Colors.white,
   ),
-  textTheme: TextTheme(
-    // Using Montserrat for Headings and Titles - Bolder and Modern
-    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20), // Bolder Headings, Increased size
-    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20),   // Bolder Titles, Increased size
-    // Using Open Sans for Body Text - Readable and Clean, but still a bit bolder than default Roboto
+  textTheme: const TextTheme(
+    // Using Merriweather for Headings and Titles - Bolder and Modern
+    headlineSmall: TextStyle(fontFamily: 'Merriweather', fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20), // Bolder Headings, Increased size
+    titleLarge: TextStyle(fontFamily: 'Merriweather', fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20),   // Bolder Titles, Increased size
+    // Using Merriweather for Body Text - Readable and Clean, but still a bit bolder than default Roboto
     bodyMedium: TextStyle(
       color: Colors.black87,
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text**
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
       fontSize: 16, // Increased size
     ),
     bodyLarge: TextStyle(
       color: Colors.black87,
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text**
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
       fontSize: 18, // Increased size
     ),
     labelLarge: TextStyle(
       color: Colors.black87,
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text**
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
       fontSize: 17, // Increased size
     ),
@@ -88,26 +88,26 @@ ThemeData darkTheme = ThemeData.dark().copyWith(
   drawerTheme: DrawerThemeData(
     backgroundColor: const Color.fromARGB(255, 48, 48, 48), // Medium Dark Grey Drawer
   ),
-  textTheme: TextTheme(
-    // Using Montserrat for Headings and Titles - Bolder and Modern
-    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20), // Bolder Headings, Increased size
-    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20),   // Bolder Titles, Increased size
-    // Using Open Sans for Body Text - Readable and Clean, but still a bit bolder than default Roboto
+  textTheme: const TextTheme(
+    // Using Merriweather for Headings and Titles - Bolder and Modern
+    headlineSmall: TextStyle(fontFamily: 'Merriweather', fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20), // Bolder Headings, Increased size
+    titleLarge: TextStyle(fontFamily: 'Merriweather', fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20),   // Bolder Titles, Increased size
+    // Using Merriweather for Body Text - Readable and Clean, but still a bit bolder than default Roboto
     bodyMedium: TextStyle(
       color: Colors.white70, // Less bright white text
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text** (Same as light theme)
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
       fontSize: 16, // Increased size
     ),
     bodyLarge: TextStyle(
       color: Colors.white70, // Less bright white text
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text** (Same as light theme)
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
       fontSize: 18, // Increased size
     ),
     labelLarge: TextStyle(
       color: Colors.white70, // Less bright white text
-      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
+      fontFamily: 'Merriweather', // **Merriweather - Readable, slightly bolder body text** (Same as light theme)
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
       fontSize: 17, // Increased size
     ),

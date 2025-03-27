@@ -8,8 +8,9 @@ class AuthCheck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize AuthController if it's not already initialized
-    Get.put(AuthController());
+    // Find the existing AuthController instance
+    final AuthController authController = Get.find<AuthController>();
+
 
     return const Scaffold(
       body: Center(
