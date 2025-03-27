@@ -14,36 +14,17 @@ class LogoutService {
         // Call the logout method from AuthController
         await authController.logout();
 
-        // Notify user of successful logout
-        Get.snackbar(
-          'Logout Successful',
-          'You have been logged out.',
-          duration: const Duration(seconds: 2),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        // Notify user of successful logout (alternative to Snackbar)
+        print('Logout Successful: You have been logged out.');
       } catch (e) {
         print('Error during logout: $e');
-        Get.snackbar(
-          'Logout Failed',
-          'An error occurred while logging out.',
-          duration: const Duration(seconds: 2),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        // Notify user of failure (alternative to Snackbar)
+        print('Logout Failed: An error occurred while logging out.');
       } finally {
         authController.isLoading.value = false;
       }
     } else if (confirmLogout == false) {
       print('Logout cancelled');
-      Get.snackbar(
-        'Logout Cancelled',
-        'Logout action was cancelled',
-        duration: const Duration(seconds: 2),
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } else {
       print('Logout dialog dismissed without choice');
     }
