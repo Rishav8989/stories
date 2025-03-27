@@ -22,13 +22,26 @@ ThemeData lightTheme = ThemeData(
   ),
   textTheme: TextTheme(
     // Using Montserrat for Headings and Titles - Bolder and Modern
-    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87), // Bolder Headings
-    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87),   // Bolder Titles
+    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20), // Bolder Headings, Increased size
+    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 20),   // Bolder Titles, Increased size
     // Using Open Sans for Body Text - Readable and Clean, but still a bit bolder than default Roboto
     bodyMedium: TextStyle(
       color: Colors.black87,
       fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
+      fontSize: 16, // Increased size
+    ),
+    bodyLarge: TextStyle(
+      color: Colors.black87,
+      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
+      fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
+      fontSize: 18, // Increased size
+    ),
+    labelLarge: TextStyle(
+      color: Colors.black87,
+      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text**
+      fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder
+      fontSize: 17, // Increased size
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -38,6 +51,7 @@ ThemeData lightTheme = ThemeData(
       textStyle: TextStyle(
         fontFamily: GoogleFonts.montserrat().fontFamily, // **Montserrat for Button Text - Bolder Buttons**
         fontWeight: FontWeight.w700, // **Bold Button Text**
+        fontSize: 18, // Increased size
       ),
     ),
   ),
@@ -76,13 +90,26 @@ ThemeData darkTheme = ThemeData.dark().copyWith(
   ),
   textTheme: TextTheme(
     // Using Montserrat for Headings and Titles - Bolder and Modern
-    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70), // Bolder Headings
-    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70),   // Bolder Titles
+    headlineSmall: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20), // Bolder Headings, Increased size
+    titleLarge: TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily, fontWeight: FontWeight.w700, color: Colors.white70, fontSize: 20),   // Bolder Titles, Increased size
     // Using Open Sans for Body Text - Readable and Clean, but still a bit bolder than default Roboto
     bodyMedium: TextStyle(
       color: Colors.white70, // Less bright white text
       fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
       fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
+      fontSize: 16, // Increased size
+    ),
+    bodyLarge: TextStyle(
+      color: Colors.white70, // Less bright white text
+      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
+      fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
+      fontSize: 18, // Increased size
+    ),
+    labelLarge: TextStyle(
+      color: Colors.white70, // Less bright white text
+      fontFamily: GoogleFonts.openSans().fontFamily, // **Open Sans - Readable, slightly bolder body text** (Same as light theme)
+      fontWeight: FontWeight.w600, // **Semi-Bold (Weight 600)** - Make body text a bit bolder (Same as light theme)
+      fontSize: 17, // Increased size
     ),
     // Customize other text styles here for dark theme if needed
   ),
@@ -98,6 +125,7 @@ ThemeData darkTheme = ThemeData.dark().copyWith(
       textStyle: TextStyle(
         fontFamily: GoogleFonts.montserrat().fontFamily, // **Montserrat for Button Text - Bolder Buttons** (Same as light theme)
         fontWeight: FontWeight.w700, // **Bold Button Text** (Same as light theme)
+        fontSize: 18, // Increased size
       ),
     ),
   ),
