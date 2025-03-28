@@ -7,6 +7,7 @@ import 'package:stories/utils/translation/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/utils/translation/translation_service.dart';
 import 'package:stories/widgets/logout_button.dart';
+import 'package:stories/widgets/view_profile_widget.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -27,78 +28,33 @@ class AccountPage extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             children: [
               _buildListTile(
+                context: context,
                 icon: Icons.person,
                 text: 'View Profile'.tr,
                 onTap: () {
-                  // Navigate to profile page
+                  Get.to(() => const ProfileLandingPage());
                 },
               ),
               _buildListTile(
+                context: context,
                 icon: Icons.security,
                 text: 'Account Security'.tr,
-                onTap: () {
-                  // Navigate to account security page
-                },
+                onTap: () {},
               ),
               _buildListTile(
+                context: context,
                 icon: Icons.language,
                 text: 'Select Language'.tr,
-                onTap: () {
-                  Get.to(() => const LanguageSelectionPage());
-                },
+                onTap: () => Get.to(() => const LanguageSelectionPage()),
               ),
               _buildThemeSelection(context, themeController, showThemeOptions),
               _buildListTile(
+                context: context,
                 icon: Icons.info,
                 text: 'About This Project'.tr,
-                onTap: () {
-                  // Navigate to about page
-                },
+                onTap: () {},
               ),
-              // Modified logout button
-              Center(
-                child: SizedBox(
-                  width: maxWidth * 0.6, // 60% of max width
-                  child: Card(
-                    color: Colors.red,
-                    margin: const EdgeInsets.symmetric(vertical: 10.0),
-                    elevation: 2.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    child: InkWell(
-                      onTap: () => LogoutService.performLogout(authController),
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: 16.0,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.logout,
-                              color: Colors.white,
-                              size: 24, // Increased icon size
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              textAlign: TextAlign.center,
-                              'Logout'.tr,
-                              style: TextStyle( // Use the theme's text style
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _buildLogoutButton(context, authController),
             ],
           ),
         ),
@@ -107,6 +63,7 @@ class AccountPage extends StatelessWidget {
   }
 
   Widget _buildListTile({
+    required BuildContext context,
     required IconData icon,
     required String text,
     required Function() onTap,
@@ -114,17 +71,15 @@ class AccountPage extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       elevation: 2.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        leading: Icon(icon, size: 32), // Increased icon size
+        leading: Icon(icon, size: 32, color: Theme.of(context).iconTheme.color),
         title: Text(
           text,
-          textAlign: TextAlign.center,
-          style: Get.textTheme.bodyLarge, // Use the theme's text style
+          textAlign: TextAlign.start,
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
         onTap: onTap,
       ),
@@ -139,6 +94,7 @@ class AccountPage extends StatelessWidget {
     return Column(
       children: [
         _buildListTile(
+          context: context,
           icon: Icons.color_lens,
           text: 'Select Theme'.tr,
           onTap: () async {
@@ -162,6 +118,7 @@ class AccountPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildThemeOption(
+                          context: context,
                           icon: Icons.light_mode,
                           text: 'Light Mode',
                           isSelected:
@@ -172,6 +129,7 @@ class AccountPage extends StatelessWidget {
                           },
                         ),
                         _buildThemeOption(
+                          context: context,
                           icon: Icons.dark_mode,
                           text: 'Dark Mode',
                           isSelected:
@@ -192,24 +150,72 @@ class AccountPage extends StatelessWidget {
   }
 
   Widget _buildThemeOption({
+    required BuildContext context,
     required IconData icon,
     required String text,
     required bool isSelected,
     required Function() onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: isSelected ? Colors.blue : null, size: 28,), // Increased icon size
+      leading: Icon(icon,
+          color: isSelected ? Colors.blue : Theme.of(context).iconTheme.color,
+          size: 28),
       title: Text(
         text,
-        style: Get.textTheme.labelLarge?.copyWith(
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.blue : null,
+          color: isSelected ? Colors.blue : Theme.of(context).textTheme.bodyLarge?.color,
         ),
       ),
       onTap: onTap,
       trailing: isSelected
-          ? const Icon(Icons.check, color: Colors.blue, size: 24,) // Increased icon size
+          ? const Icon(Icons.check, color: Colors.blue, size: 24)
           : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, AuthController authController) {
+    return Center(
+      child: SizedBox(
+        width: 240,
+        child: Card(
+          color: Colors.red,
+          margin: const EdgeInsets.symmetric(vertical: 10.0),
+          elevation: 2.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: InkWell(
+            onTap: () => LogoutService.performLogout(authController),
+            borderRadius: BorderRadius.circular(20.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 16.0,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.logout,
+                    color: Theme.of(context).iconTheme.color,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Logout'.tr,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
