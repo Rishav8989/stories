@@ -8,6 +8,7 @@ import 'package:stories/utils/theme/app_theme.dart';
 import 'package:stories/utils/user_service.dart';
 
 void main() async {
+  
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize PocketBase instance
