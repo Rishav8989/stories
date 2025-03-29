@@ -43,13 +43,7 @@ class ProfileLandingPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    height: 250,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(24),
-                      ),
-                    ),
+
                     child: Center(
                       child: user['avatar'] != null && user['avatar'].isNotEmpty
                           ? CircleAvatar(
@@ -81,58 +75,93 @@ class ProfileLandingPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ListTile(
-                              leading: const Icon(Icons.person,
-                                  color: Colors.blue, size: 32),
-                              title: Text(
-                                user['name'] ?? 'Unknown',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: const Text('Name'),
+                            // Custom ListTile with subtitle on top
+                            Row(
+                              children: [
+                                const Icon(Icons.person, color: Colors.blue, size: 32),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Name', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      user['name'] ?? 'Unknown',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            ListTile(
-                              leading: const Icon(Icons.email,
-                                  color: Colors.blue, size: 32),
-                              title: Text(
-                                user['email'] ?? 'Unknown',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: const Text('Email'),
+                            const SizedBox(height: 16),
+
+                            // Custom ListTile with subtitle on top
+                            Row(
+                              children: [
+                                const Icon(Icons.email, color: Colors.blue, size: 32),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Email', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      user['email'] ?? 'Unknown',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            ListTile(
-                              leading: const Icon(Icons.calendar_today,
-                                  color: Colors.blue, size: 32),
-                              title: Text(
-                                DateTime.parse(user['created'])
-                                    .toLocal()
-                                    .toString()
-                                    .split('.')
-                                    .first,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: const Text('Date Joined'),
+                            const SizedBox(height: 16),
+
+                            // Custom ListTile with subtitle on top
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, color: Colors.blue, size: 32),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Date Joined', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      DateTime.parse(user['created'])
+                                          .toLocal()
+                                          .toString()
+                                          .split('.')
+                                          .first,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            ListTile(
-                              leading: Icon(
-                                user['verified'] == true
-                                    ? Icons.check_circle
-                                    : Icons.cancel,
-                                color: user['verified'] == true
-                                    ? Colors.green
-                                    : Colors.red,
-                                size: 32,
-                              ),
-                              title: Text(
-                                user['verified'] == true
-                                    ? 'Verified'
-                                    : 'Not Verified',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: const Text('Account Status'),
+                            const SizedBox(height: 16),
+
+                            // Custom ListTile with subtitle on top
+                            Row(
+                              children: [
+                                Icon(
+                                  user['verified'] == true
+                                      ? Icons.check_circle
+                                      : Icons.cancel,
+                                  color: user['verified'] == true
+                                      ? Colors.green
+                                      : Colors.red,
+                                  size: 32,
+                                ),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Account Status', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      user['verified'] == true
+                                          ? 'Verified'
+                                          : 'Not Verified',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
