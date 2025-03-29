@@ -11,10 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.2.1
+  flutter_image_compress: ^2.4.0
   get: ^4.7.2
   get_storage: ^2.1.1
   google_fonts: ^6.2.1
   image_picker: ^1.1.2
+  path: ^1.9.1
   pocketbase: ^0.22.0
   shared_preferences: ^2.5.2
 
