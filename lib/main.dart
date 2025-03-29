@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
-import 'package:stories/auth_controller.dart';
+import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/routes/app_routes.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/utils/theme/app_theme.dart';

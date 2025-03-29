@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/auth_controller.dart';
+import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/utils/translation/language_selector.dart';
 import 'package:stories/utils/translation/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';

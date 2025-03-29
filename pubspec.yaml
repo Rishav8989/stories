@@ -7,12 +7,14 @@ environment:
   sdk: ^3.7.0
 
 dependencies:
+  file_picker: ^9.2.3
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.2.1
   get: ^4.7.2
   get_storage: ^2.1.1
   google_fonts: ^6.2.1
+  image_picker: ^1.1.2
   pocketbase: ^0.22.0
   shared_preferences: ^2.5.2
 

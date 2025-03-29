@@ -7,7 +7,6 @@ class ProfileLandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the controller if it's not already initialized
     final ProfileController profileController = Get.put(ProfileController());
 
     return Scaffold(
@@ -27,8 +26,7 @@ class ProfileLandingPage extends StatelessWidget {
           return const Center(child: Text('No user data available.'));
         }
 
-        final userData =
-            profileController.userData.value['items'] as List<dynamic>;
+        final userData = profileController.userData.value['items'] as List<dynamic>;
         final user = userData.isNotEmpty ? userData.first : null;
 
         if (user == null) {
@@ -42,28 +40,53 @@ class ProfileLandingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-
-                    child: Center(
-                      child: user['avatar'] != null && user['avatar'].isNotEmpty
-                          ? CircleAvatar(
-                              radius: 60,
-                              backgroundImage: NetworkImage(
-                                'http://rishavpocket.duckdns.org/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}',
-                              ),
-                            )
-                          : Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
-                              padding: const EdgeInsets.all(16),
-                              child: const Icon(
-                                Icons.account_circle,
-                                size: 120,
+                  GestureDetector( // [[1]]
+                    onTap: () async {
+                      await profileController.uploadUserProfilePicture();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 16),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: user['avatar'] != null && user['avatar'].isNotEmpty
+                                ? CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: NetworkImage(
+                                      'http://rishavpocket.duckdns.org/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}?thumb=200x200',
+                                    ),
+                                  )
+                                : Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                    ),
+                                    padding: const EdgeInsets.all(16),
+                                    child: const Icon(
+                                      Icons.account_circle,
+                                      size: 120,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
                                 color: Colors.blue,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 18,
                               ),
                             ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
@@ -75,7 +98,6 @@ class ProfileLandingPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Custom ListTile with subtitle on top
                             Row(
                               children: [
                                 const Icon(Icons.person, color: Colors.blue, size: 32),
@@ -93,8 +115,6 @@ class ProfileLandingPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            // Custom ListTile with subtitle on top
                             Row(
                               children: [
                                 const Icon(Icons.email, color: Colors.blue, size: 32),
@@ -112,8 +132,6 @@ class ProfileLandingPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            // Custom ListTile with subtitle on top
                             Row(
                               children: [
                                 const Icon(Icons.calendar_today, color: Colors.blue, size: 32),
@@ -135,8 +153,6 @@ class ProfileLandingPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            // Custom ListTile with subtitle on top
                             Row(
                               children: [
                                 Icon(

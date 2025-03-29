@@ -5,7 +5,7 @@ import 'package:stories/screens/home%20screen/create_page.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/utils/theme/app_theme.dart';
 
-import 'package:stories/auth_controller.dart';
+import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/screens/home%20screen/discover_page.dart';
 import 'package:stories/widgets/logout_button.dart';
 import 'package:stories/utils/theme/theme_switcher_buttons.dart';

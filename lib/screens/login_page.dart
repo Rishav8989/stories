@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/auth_controller.dart';
+import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/screens/registration_page.dart'; // Import RegistrationPage
 
 class LoginPage extends GetView<AuthController> {
