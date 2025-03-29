@@ -45,10 +45,15 @@ class ProfileController extends GetxController {
   }
 
   // New avatar upload method [[4]][[9]]
-Future<void> uploadUserProfilePicture() async {
+  Future<void> uploadUserProfilePicture() async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // 0-100 (lower = smaller file)
+        maxWidth: 800, // Limit image dimensions
+        maxHeight: 800,
+      );
 
       if (pickedFile == null) return;
 
@@ -81,9 +86,12 @@ Future<void> uploadUserProfilePicture() async {
         'http://rishavpocket.duckdns.org/api/collections/$collectionId/records/$userId',
       );
 
-      var request = http.MultipartRequest('PATCH', uploadUrl)
-        ..headers['Authorization'] = token
-        ..files.add(await http.MultipartFile.fromPath('avatar', pickedFile.path));
+      var request =
+          http.MultipartRequest('PATCH', uploadUrl)
+            ..headers['Authorization'] = token
+            ..files.add(
+              await http.MultipartFile.fromPath('avatar', pickedFile.path),
+            );
 
       final response = await request.send();
       final responseStr = await response.stream.bytesToString();
@@ -91,7 +99,9 @@ Future<void> uploadUserProfilePicture() async {
       if (response.statusCode == 200) {
         await fetchUserData(); // Refresh data after update
       } else {
-        throw Exception('Failed to upload image: ${response.statusCode}\n$responseStr');
+        throw Exception(
+          'Failed to upload image: ${response.statusCode}\n$responseStr',
+        );
       }
     } catch (e) {
       error.value = 'Upload failed: ${e.toString()}';
