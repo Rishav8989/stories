@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/auth_controller.dart';
@@ -12,7 +13,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize PocketBase instance
-  final PocketBase pb = PocketBase('http://rishavpocket.duckdns.org');
+    await dotenv.load(fileName: ".env");
+  final PocketBase pb = PocketBase(dotenv.get('POCKETBASE_URL'));
 
   // Initialize ThemeController
   final ThemeController themeController = Get.put(ThemeController());
