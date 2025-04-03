@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/auth_controller.dart';
+import 'package:stories/utils/theme/theme_selector.dart';
 import 'package:stories/utils/translation/language_selector.dart';
 import 'package:stories/utils/translation/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
-import 'package:stories/utils/translation/translation_service.dart';
 import 'package:stories/widgets/logout_button.dart';
 import 'package:stories/widgets/view_profile_widget.dart';
 
@@ -17,10 +17,16 @@ class AccountPage extends StatelessWidget {
     final AuthController authController = Get.find<AuthController>();
     final LocaleController localeController = Get.put(LocaleController());
     final ThemeController themeController = Get.find<ThemeController>();
-    final RxBool showThemeOptions = false.obs;
     const double maxWidth = 400.0;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Center(child: Text('Account Settings'.tr)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: maxWidth),
@@ -47,7 +53,7 @@ class AccountPage extends StatelessWidget {
                 text: 'Select Language'.tr,
                 onTap: () => Get.to(() => const LanguageSelectionPage()),
               ),
-              _buildThemeSelection(context, themeController, showThemeOptions),
+              ThemeSelectorWidget(themeController: themeController),
               _buildListTile(
                 context: context,
                 icon: Icons.info,
@@ -56,7 +62,6 @@ class AccountPage extends StatelessWidget {
               ),
               _buildLogoutButton(context, authController),
             ],
-            
           ),
         ),
       ),
@@ -74,8 +79,10 @@ class AccountPage extends StatelessWidget {
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 12.0,
+        ),
         leading: Icon(icon, size: 32, color: Theme.of(context).iconTheme.color),
         title: Text(
           text,
@@ -87,90 +94,10 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeSelection(
+  Widget _buildLogoutButton(
     BuildContext context,
-    ThemeController themeController,
-    RxBool showThemeOptions,
+    AuthController authController,
   ) {
-    return Obx(() => Column(
-      children: [
-        _buildListTile(
-          context: context,
-          icon: themeController.currentTheme == AppTheme.light 
-              ? Icons.light_mode 
-              : Icons.dark_mode,
-          text: '${'Theme'.tr}: ${themeController.currentTheme.name.capitalize}',
-          onTap: () => showThemeOptions.toggle(),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          child: showThemeOptions.value
-              ? Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                  elevation: 4.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildThemeOption(
-                        context: context,
-                        icon: Icons.light_mode,
-                        text: 'Light Mode',
-                        isSelected: themeController.currentTheme == AppTheme.light,
-                        onTap: () {
-                          themeController.switchToLightTheme();
-                          showThemeOptions.value = false;
-                          Get.forceAppUpdate(); // Force update UI
-                        },
-                      ),
-                      _buildThemeOption(
-                        context: context,
-                        icon: Icons.dark_mode,
-                        text: 'Dark Mode',
-                        isSelected: themeController.currentTheme == AppTheme.dark,
-                        onTap: () {
-                          themeController.switchToDarkTheme();
-                          showThemeOptions.value = false;
-                          Get.forceAppUpdate(); // Force update UI
-                        },
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    ));
-  }
-
-  Widget _buildThemeOption({
-    required BuildContext context,
-    required IconData icon,
-    required String text,
-    required bool isSelected,
-    required Function() onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon,
-          color: isSelected ? Colors.blue : Theme.of(context).iconTheme.color,
-          size: 28),
-      title: Text(
-        text,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.blue : Theme.of(context).textTheme.bodyLarge?.color,
-        ),
-      ),
-      onTap: onTap,
-      trailing: isSelected
-          ? const Icon(Icons.check, color: Colors.blue, size: 24)
-          : const SizedBox.shrink(),
-    );
-  }
-
-  Widget _buildLogoutButton(BuildContext context, AuthController authController) {
     return Center(
       child: SizedBox(
         width: 240,

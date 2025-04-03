@@ -67,7 +67,7 @@ class _CreatePageState extends State<CreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Books'),
+        title: Center(child: const Text('My Books')),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
