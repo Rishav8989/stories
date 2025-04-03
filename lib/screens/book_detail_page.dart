@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/book_details_page_controller.dart';
 import 'package:intl/intl.dart';
+import 'package:stories/utils/user_service.dart';
 
 class BookDetailsPage extends GetView<BookDetailsController> {
   final String bookId;
@@ -19,21 +20,121 @@ class BookDetailsPage extends GetView<BookDetailsController> {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: Obx(() => Text(controller.book.value?.title ?? 'Book Details')),
+            title: Obx(() => Text(controller.book.value?.title?.toUpperCase() ?? 'BOOK DETAILS')),
             actions: [
               Obx(() {
                 final book = controller.book.value;
-                if (book != null && book.status == 'draft') {
-                  return IconButton(
-                    onPressed: controller.isLoading.value ? null : controller.publishBook,
-                    icon: const Icon(Icons.publish),
-                    tooltip: 'Publish',
-                    style: IconButton.styleFrom(
-                      foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
+                if (book == null) return const SizedBox.shrink();
+                
+                return Row(
+                  children: [
+                    if (book.status == 'draft')
+                      IconButton(
+                        onPressed: controller.isLoading.value ? null : controller.publishBook,
+                        icon: const Icon(Icons.publish),
+                        tooltip: 'Publish',
+                        style: IconButton.styleFrom(
+                          foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+                        ),
+                      ),
+                    if (book.author == controller.userId)  // Show menu only for book owner
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert),
+                        offset: const Offset(0, 40),  // Move menu slightly down from app bar
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        itemBuilder: (BuildContext context) => [
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.delete_outline,
+                                  color: Theme.of(context).colorScheme.error,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    letterSpacing: 0.5,
+                                    color: Theme.of(context).colorScheme.error,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) async {
+                          if (value == 'delete') {
+                            final confirm = await Get.dialog<bool>(
+                              AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                                contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                                title: const Text(
+                                  'Delete Book',
+                                  style: TextStyle(
+                                    letterSpacing: 0.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                content: const Text(
+                                  'Are you sure you want to delete this book? This action cannot be undone.',
+                                  style: TextStyle(letterSpacing: 0.5),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Get.back(result: false),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(letterSpacing: 0.5),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Get.back(result: true),
+                                    child: const Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              try {
+                                await controller.deleteBook();
+                                Get.back(); // Return to previous screen after deletion
+                                Get.snackbar(
+                                  'SUCCESS',
+                                  'BOOK DELETED SUCCESSFULLY',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              } catch (e) {
+                                Get.snackbar(
+                                  'ERROR',
+                                  'FAILED TO DELETE BOOK',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              }
+                            }
+                          }
+                        },
+                      ),
+                  ],
+                );
               }),
             ],
           ),
@@ -43,11 +144,23 @@ class BookDetailsPage extends GetView<BookDetailsController> {
             }
 
             if (controller.errorMessage != null) {
-              return Center(child: Text(controller.errorMessage!));
+              return Center(
+                child: Text(
+                  controller.errorMessage!.toUpperCase(),
+                  style: const TextStyle(letterSpacing: 0.5),
+                ),
+              );
             }
 
             final book = controller.book.value;
-            if (book == null) return const Center(child: Text('Book not found'));
+            if (book == null) {
+              return const Center(
+                child: Text(
+                  'BOOK NOT FOUND',
+                  style: TextStyle(letterSpacing: 0.5),
+                ),
+              );
+            }
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),

@@ -3,26 +3,34 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/models/book_model.dart';
 import 'package:flutter/material.dart';
+import 'package:stories/utils/user_service.dart';
 
 class BookDetailsController extends GetxController {
   final isLoading = true.obs;
   final Rx<Book?> book = Rx<Book?>(null);
   String? errorMessage;
-
+  String? userId;
   final String bookId;
   
-  BookDetailsController({required this.bookId});
+  final UserService _userService;
+  
+  BookDetailsController({required this.bookId}) 
+      : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
 
   @override
   void onInit() {
     super.onInit();
+    _initializeUserId();
     fetchBookDetails();
+  }
+
+  Future<void> _initializeUserId() async {
+    userId = await _userService.getUserId();
   }
 
   Future<void> fetchBookDetails() async {
     try {
-      final pb = PocketBase(dotenv.get('POCKETBASE_URL'));
-      final record = await pb.collection('books').getOne(
+      final record = await _userService.pb.collection('books').getOne(
         bookId,
         expand: 'author',
       );
@@ -95,6 +103,15 @@ class BookDetailsController extends GetxController {
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteBook() async {
+    try {
+      isLoading.value = true;
+      await _userService.pb.collection('books').delete(bookId);
     } finally {
       isLoading.value = false;
     }
