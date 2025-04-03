@@ -56,6 +56,7 @@ class AccountPage extends StatelessWidget {
               ),
               _buildLogoutButton(context, authController),
             ],
+            
           ),
         ),
       ),
