@@ -92,62 +92,57 @@ class AccountPage extends StatelessWidget {
     ThemeController themeController,
     RxBool showThemeOptions,
   ) {
-    return Column(
+    return Obx(() => Column(
       children: [
         _buildListTile(
           context: context,
-          icon: Icons.color_lens,
-          text: 'Select Theme'.tr,
-          onTap: () async {
-            showThemeOptions.value = !showThemeOptions.value;
-            if (showThemeOptions.value) {
-              await Future.delayed(const Duration(milliseconds: 300));
-            }
-          },
+          icon: themeController.currentTheme == AppTheme.light 
+              ? Icons.light_mode 
+              : Icons.dark_mode,
+          text: '${'Theme'.tr}: ${themeController.currentTheme.name.capitalize}',
+          onTap: () => showThemeOptions.toggle(),
         ),
-        Obx(() {
-          return AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            child: showThemeOptions.value
-                ? Card(
-                    margin: const EdgeInsets.all(16.0),
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildThemeOption(
-                          context: context,
-                          icon: Icons.light_mode,
-                          text: 'Light Mode',
-                          isSelected:
-                              themeController.currentTheme == AppTheme.light,
-                          onTap: () {
-                            themeController.switchToLightTheme();
-                            showThemeOptions.value = false;
-                          },
-                        ),
-                        _buildThemeOption(
-                          context: context,
-                          icon: Icons.dark_mode,
-                          text: 'Dark Mode',
-                          isSelected:
-                              themeController.currentTheme == AppTheme.dark,
-                          onTap: () {
-                            themeController.switchToDarkTheme();
-                            showThemeOptions.value = false;
-                          },
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          );
-        }),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          child: showThemeOptions.value
+              ? Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                  elevation: 4.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildThemeOption(
+                        context: context,
+                        icon: Icons.light_mode,
+                        text: 'Light Mode',
+                        isSelected: themeController.currentTheme == AppTheme.light,
+                        onTap: () {
+                          themeController.switchToLightTheme();
+                          showThemeOptions.value = false;
+                          Get.forceAppUpdate(); // Force update UI
+                        },
+                      ),
+                      _buildThemeOption(
+                        context: context,
+                        icon: Icons.dark_mode,
+                        text: 'Dark Mode',
+                        isSelected: themeController.currentTheme == AppTheme.dark,
+                        onTap: () {
+                          themeController.switchToDarkTheme();
+                          showThemeOptions.value = false;
+                          Get.forceAppUpdate(); // Force update UI
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
-    );
+    ));
   }
 
   Widget _buildThemeOption({

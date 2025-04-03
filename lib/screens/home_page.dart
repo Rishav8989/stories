@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/screens/home%20screen/account_page.dart';
 import 'package:stories/screens/home%20screen/create_page.dart';
-import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/screens/home%20screen/discover_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -10,7 +9,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {    
-    final ThemeController themeController = Get.find();
     return GetBuilder<HomeController>(
       init: HomeController(),
       builder: (controller) {
