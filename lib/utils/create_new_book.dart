@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:stories/screens/home%20screen/create_page.dart';
 import '../../utils/user_service.dart'; // Ensure this path is correct
 
 class CreateNewBookPage extends StatefulWidget {
@@ -109,6 +110,7 @@ class _CreateNewBookPageState extends State<CreateNewBookPage> {
            _selectedGenre = null; // Reset genre dropdown
            // No need to reset status or isOriginal anymore
         });
+              Get.off(() => const CreatePage());
       }
 
     } catch (e) {
