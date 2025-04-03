@@ -76,16 +76,17 @@ class BookWidget extends StatelessWidget {
             ),
             SizedBox(height: isMobile ? 4 : 8), // Reduced spacing for mobile
             SizedBox(
-              height: isMobile ? 32 : 44,
+              height: isMobile ? 40 : 48, // Increased height for more text space
               child: Text(
-                title,
+                title.toUpperCase(), // Convert text to uppercase
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: isMobile ? 10 : 13,
+                  fontSize: isMobile ? 12 : 14, // Increased font sizes
                   height: 1.2,
+                  letterSpacing: 0.5, // Add letter spacing for better readability of caps
                 ),
               ),
             ),

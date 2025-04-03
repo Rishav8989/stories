@@ -84,8 +84,11 @@ class BookDetailsPage extends GetView<BookDetailsController> {
                         ),
                       const SizedBox(height: 24),
                       Text(
-                        book.title,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                        book.title.toUpperCase(),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
@@ -95,22 +98,22 @@ class BookDetailsPage extends GetView<BookDetailsController> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildInfoRow('Status', book.status.capitalize!),
+                              _buildInfoRow('STATUS', book.status.toUpperCase()),
                               const SizedBox(height: 16),
-                              _buildInfoRow('Type', book.bookType),
+                              _buildInfoRow('TYPE', book.bookType.toUpperCase()),
                               const SizedBox(height: 16),
-                              _buildInfoRow('Genres', book.genre.join(", ")),
+                              _buildInfoRow('GENRES', book.genre.join(", ").toUpperCase()),
                               const SizedBox(height: 16),
                               _buildInfoRow(
-                                'Last updated',
-                                DateFormat.yMMMd().format(book.updated),
+                                'LAST UPDATED',
+                                DateFormat.yMMMd().format(book.updated).toUpperCase(),
                               ),
                               const SizedBox(height: 16),
                               _buildInfoRow(
-                                'Source',
-                                book.isOriginal
+                                'SOURCE',
+                                (book.isOriginal
                                     ? 'Original Work'
-                                    : 'Based on: ${book.parentBook ?? "Unknown"}',
+                                    : 'Based on: ${book.parentBook ?? "Unknown"}').toUpperCase(),
                               ),
                             ],
                           ),
@@ -138,11 +141,17 @@ class BookDetailsPage extends GetView<BookDetailsController> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.grey,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         Expanded(
-          child: Text(value),
+          child: Text(
+            value,
+            style: const TextStyle(
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
       ],
     );
