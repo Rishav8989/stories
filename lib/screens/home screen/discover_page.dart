@@ -29,6 +29,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
       final resultList = await pb.collection('books').getList(
         page: 1,
         perPage: 50,
+          filter: 'status = "published"',
+
       );
 
       setState(() {
