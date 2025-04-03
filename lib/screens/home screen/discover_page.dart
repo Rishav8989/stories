@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/widgets/book_layout_widget.dart';
+import 'package:stories/utils/user_service.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({Key? key}) : super(key: key);
@@ -12,23 +13,29 @@ class DiscoverPage extends StatefulWidget {
 
 class _DiscoverPageState extends State<DiscoverPage> {
   final List<Map<String, dynamic>> _books = [];
+  final List<Map<String, dynamic>> _userBooks = [];
   bool _isLoading = true;
   String? _errorMessage;
+  final UserService _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
 
   @override
   void initState() {
     super.initState();
-    _fetchBooks();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    await Future.wait([
+      _fetchBooks(),
+      _fetchUserBooks(),
+    ]);
   }
 
   Future<void> _fetchBooks() async {
     if (!mounted) return;
 
     try {
-      // Fetch PocketBase URL from environment variables
       final pb = PocketBase(dotenv.get('POCKETBASE_URL'));
-
-      // Fetch books from the 'books' collection
       final resultList = await pb.collection('books').getList(
         page: 1,
         perPage: 50,
@@ -55,13 +62,68 @@ class _DiscoverPageState extends State<DiscoverPage> {
     }
   }
 
-  // Add refresh functionality
+  Future<void> _fetchUserBooks() async {
+    if (!mounted) return;
+
+    try {
+      final userId = await _userService.getUserId();
+      
+      if (userId != null) {
+        final resultList = await _userService.pb.collection('books').getList(
+          page: 1,
+          perPage: 50,
+          filter: 'author = "$userId" && status = "published"',
+        );
+
+        if (!mounted) return;
+
+        setState(() {
+          _userBooks.clear();
+          for (var item in resultList.items) {
+            _userBooks.add(item.toJson());
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching user books: $e');
+    }
+  }
+
   Future<void> _refreshBooks() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    await _fetchBooks();
+    await _fetchInitialData();
+  }
+
+  Widget _buildBookRow(List<Map<String, dynamic>> books) {
+    return SizedBox(
+      height: 280,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: books.length,
+        itemBuilder: (context, index) {
+          final book = books[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: SizedBox(
+              width: 160,
+              child: BookWidget(
+                title: book['title'] ?? 'Unknown Title',
+                coverUrl: book['book_cover'] ?? '',
+                pbUrl: dotenv.get('POCKETBASE_URL'),
+                bookId: book['id'],
+                collectionId: book['collectionId'],
+                onTap: () {
+                  // Navigate to book details
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -80,12 +142,10 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Enforce a minimum width of 200 pixels for the entire page
         final minWidth = 200.0;
         final screenWidth = constraints.maxWidth;
 
         if (screenWidth < minWidth) {
-          // If the screen width is less than the minimum width, center the content
           return Center(
             child: SizedBox(
               width: minWidth,
@@ -96,10 +156,9 @@ class _DiscoverPageState extends State<DiscoverPage> {
           );
         }
 
-        // Otherwise, display the Scaffold normally
         return Scaffold(
           appBar: AppBar(
-            title: Center(child: const Text('Discover Books')),
+            title: const Center(child: Text('Discover Books')),
           ),
           body: _buildBody(),
         );
@@ -109,65 +168,40 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   Widget _buildBody() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Trending Books',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _books.isEmpty
-                ? const Center(child: Text('No books found'))
-                : RefreshIndicator(
-                    onRefresh: _refreshBooks,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Calculate items per row based on screen width
-                        final screenWidth = constraints.maxWidth;
-                        int crossAxisCount;
-                        double itemWidth;
-                        double aspectRatio;
-                        
-                        if (screenWidth < 600) { // Mobile screen
-                          crossAxisCount = 2;
-                          itemWidth = (screenWidth - 24) / 2; // Account for padding
-                          aspectRatio = 0.7; // Taller books for mobile
-                        } else {
-                          itemWidth = 200.0;
-                          crossAxisCount = (screenWidth / itemWidth).floor();
-                          aspectRatio = 0.6;
-                        }
-
-                        return GridView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          gridDelegate: getResponsiveGridDelegate(context),
-                          itemCount: _books.length,
-                          itemBuilder: (context, index) {
-                            final book = _books[index];
-                            return BookWidget(
-                              title: book['title'] ?? 'Unknown Title',
-                              coverUrl: book['book_cover'] ?? '',
-                              pbUrl: dotenv.get('POCKETBASE_URL'),
-                              bookId: book['id'],
-                              collectionId: book['collectionId'],
-                              onTap: () {
-                                // Navigate to book details
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
+      padding: const EdgeInsets.all(16.0),
+      child: RefreshIndicator(
+        onRefresh: _refreshBooks,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_userBooks.isNotEmpty) ...[
+                const Text(
+                  'Your Published Books',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                const SizedBox(height: 16),
+                _buildBookRow(_userBooks),
+                const SizedBox(height: 32),
+              ],
+              const Text(
+                'Trending Books',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _books.isEmpty
+                  ? const Center(child: Text('No books found'))
+                  : _buildBookRow(_books),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
