@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:stories/controller/create_book_controller.dart';
 
 class CreateNewBookPage extends StatelessWidget {
