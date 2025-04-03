@@ -20,6 +20,30 @@ class BookDetailsPage extends GetView<BookDetailsController> {
         return Scaffold(
           appBar: AppBar(
             title: Obx(() => Text(controller.book.value?.title ?? 'Book Details')),
+            actions: [
+              Obx(() {
+                final book = controller.book.value;
+                if (book != null && book.status == 'draft') {  // Only show for draft status
+                  return TextButton.icon(
+                    onPressed: controller.isLoading.value 
+                      ? null 
+                      : controller.publishBook,
+                    icon: const Icon(
+                      Icons.publish,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Publish',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+            ],
           ),
           body: Obx(() {
             if (controller.isLoading.value) {
