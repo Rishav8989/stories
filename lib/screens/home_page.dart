@@ -16,12 +16,6 @@ class HomePage extends StatelessWidget {
       init: HomeController(),
       builder: (controller) {
         return Scaffold(
-          appBar: AppBar(
-            title: Text(controller.getTitle()),
-            actions: [
-              const ThemeToggleButton(),
-            ],
-          ),
           body: IndexedStack(
             index: controller.tabIndex,
             children: const [
