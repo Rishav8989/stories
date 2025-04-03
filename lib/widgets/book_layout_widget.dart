@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:stories/screens/book_detail_page.dart';
 
 class BookWidget extends StatelessWidget {
   final String title;
@@ -7,6 +10,7 @@ class BookWidget extends StatelessWidget {
   final String bookId;
   final String collectionId;
   final VoidCallback? onTap;
+  final String thumbSize;  // Add this parameter
 
   const BookWidget({
     Key? key,
@@ -16,6 +20,7 @@ class BookWidget extends StatelessWidget {
     required this.bookId,
     required this.collectionId,
     this.onTap,
+    this.thumbSize = '150x200',  // Add default value
   }) : super(key: key);
 
   @override
@@ -32,7 +37,7 @@ class BookWidget extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 4.0 : 8.0), // Reduced padding for mobile
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () => Get.to(() => BookDetailsPage(bookId: bookId)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min, // Add this to prevent expansion
@@ -44,13 +49,13 @@ class BookWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(isMobile ? 2 : 4),
                 child: coverUrl.isNotEmpty
                     ? Image.network(
-                        '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=150x200',
+                        '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=$thumbSize',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey[300],
                             child: Center(
-                              child: Icon(Icons.book, 
+                              child: Icon(Icons.broken_image, 
                                 size: isMobile ? 20 : 40,
                                 color: Colors.grey[400],
                               ),
@@ -61,7 +66,7 @@ class BookWidget extends StatelessWidget {
                     : Container(
                         color: Colors.grey[300],
                         child: Center(
-                          child: Icon(Icons.book, 
+                          child: Icon(Icons.image, 
                             size: isMobile ? 20 : 40,
                             color: Colors.grey[400],
                           ),

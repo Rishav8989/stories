@@ -1,101 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:pocketbase/pocketbase.dart';
+import 'package:stories/controller/discover_page_controller.dart';
+import 'package:stories/screens/book_detail_page.dart';
 import 'package:stories/widgets/book_layout_widget.dart';
-import 'package:stories/utils/user_service.dart';
 
-class DiscoverPage extends StatefulWidget {
+class DiscoverPage extends GetView<DiscoverController> {
   const DiscoverPage({Key? key}) : super(key: key);
-
-  @override
-  State<DiscoverPage> createState() => _DiscoverPageState();
-}
-
-class _DiscoverPageState extends State<DiscoverPage> {
-  final List<Map<String, dynamic>> _books = [];
-  final List<Map<String, dynamic>> _userBooks = [];
-  bool _isLoading = true;
-  String? _errorMessage;
-  final UserService _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchInitialData();
-  }
-
-  Future<void> _fetchInitialData() async {
-    await Future.wait([
-      _fetchBooks(),
-      _fetchUserBooks(),
-    ]);
-  }
-
-  Future<void> _fetchBooks() async {
-    if (!mounted) return;
-
-    try {
-      final pb = PocketBase(dotenv.get('POCKETBASE_URL'));
-      final resultList = await pb.collection('books').getList(
-        page: 1,
-        perPage: 50,
-        filter: 'status = "published"',
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        _books.clear();
-        for (var item in resultList.items) {
-          _books.add(item.toJson());
-        }
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to load books. Please try again.';
-      });
-      debugPrint('Error fetching books: $e');
-    }
-  }
-
-  Future<void> _fetchUserBooks() async {
-    if (!mounted) return;
-
-    try {
-      final userId = await _userService.getUserId();
-      
-      if (userId != null) {
-        final resultList = await _userService.pb.collection('books').getList(
-          page: 1,
-          perPage: 50,
-          filter: 'author = "$userId" && status = "published"',
-        );
-
-        if (!mounted) return;
-
-        setState(() {
-          _userBooks.clear();
-          for (var item in resultList.items) {
-            _userBooks.add(item.toJson());
-          }
-        });
-      }
-    } catch (e) {
-      debugPrint('Error fetching user books: $e');
-    }
-  }
-
-  Future<void> _refreshBooks() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    await _fetchInitialData();
-  }
 
   Widget _buildBookRow(List<Map<String, dynamic>> books) {
     return SizedBox(
@@ -116,8 +27,9 @@ class _DiscoverPageState extends State<DiscoverPage> {
                 bookId: book['id'],
                 collectionId: book['collectionId'],
                 onTap: () {
-                  // Navigate to book details
+                  Get.to(() => BookDetailsPage(bookId: book['id']));
                 },
+                thumbSize: '200x300', // Add thumbnail size parameter
               ),
             ),
           );
@@ -128,79 +40,82 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Text(_errorMessage!),
-      );
-    }
+      if (controller.errorMessage != null) {
+        return Center(child: Text(controller.errorMessage!));
+      }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final minWidth = 200.0;
-        final screenWidth = constraints.maxWidth;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final minWidth = 200.0;
+          final screenWidth = constraints.maxWidth;
 
-        if (screenWidth < minWidth) {
-          return Center(
-            child: SizedBox(
-              width: minWidth,
-              child: Scaffold(
-                body: _buildBody(),
+          if (screenWidth < minWidth) {
+            return Center(
+              child: SizedBox(
+                width: minWidth,
+                child: _buildScaffold(),
               ),
-            ),
-          );
-        }
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const Center(child: Text('Discover Books')),
-          ),
-          body: _buildBody(),
-        );
-      },
-    );
+            );
+          }
+          return _buildScaffold();
+        },
+      );
+    });
   }
 
-  Widget _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: RefreshIndicator(
-        onRefresh: _refreshBooks,
-        child: SingleChildScrollView(
+  Widget _buildScaffold() {
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: controller.refreshBooks,
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_userBooks.isNotEmpty) ...[
-                const Text(
-                  'Your Published Books',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildBookRow(_userBooks),
-                const SizedBox(height: 32),
-              ],
-              const Text(
-                'Trending Books',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+          slivers: [
+            SliverAppBar(
+              floating: true,
+              pinned: false,
+              snap: true,
+              expandedHeight: 50.0,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text('Discover Books'),
+                centerTitle: true,
               ),
-              const SizedBox(height: 16),
-              _books.isEmpty
-                  ? const Center(child: Text('No books found'))
-                  : _buildBookRow(_books),
-            ],
-          ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(16.0),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  if (controller.userBooks.isNotEmpty) ...[
+                    const Text(
+                      'Your Published Books',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildBookRow(controller.userBooks),
+                    const SizedBox(height: 32),
+                  ],
+                  const Text(
+                    'Trending Books',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  controller.books.isEmpty
+                      ? const Center(child: Text('No books found'))
+                      : _buildBookRow(controller.books),
+                ]),
+              ),
+            ),
+          ],
         ),
       ),
     );

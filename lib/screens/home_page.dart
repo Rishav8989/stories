@@ -3,18 +3,24 @@ import 'package:get/get.dart';
 import 'package:stories/screens/home%20screen/account_page.dart';
 import 'package:stories/screens/home%20screen/create_page.dart';
 import 'package:stories/screens/home%20screen/discover_page.dart';
+import 'package:stories/controller/discover_page_controller.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {    
+    // Add controller binding with lazy loading
+    Get.lazyPut(() => DiscoverController(), fenix: true);
+    
     return GetBuilder<HomeController>(
       init: HomeController(),
       builder: (controller) {
         return Scaffold(
-          body: IndexedStack(
-            index: controller.tabIndex,
+          body: PageView(
+            physics: const NeverScrollableScrollPhysics(),
+            controller: controller.pageController,
+            onPageChanged: controller.changeTabIndex,
             children: const [
               DiscoverPage(),
               CreatePage(),
@@ -24,7 +30,7 @@ class HomePage extends StatelessWidget {
           bottomNavigationBar: BottomNavigationBar(
             unselectedItemColor: Theme.of(context).unselectedWidgetColor,
             selectedItemColor: Theme.of(context).colorScheme.primary,
-            onTap: controller.changeTabIndex,
+            onTap: controller.animateToPage,
             currentIndex: controller.tabIndex,
             showSelectedLabels: true,
             showUnselectedLabels: true,
@@ -60,6 +66,27 @@ class HomePage extends StatelessWidget {
 
 class HomeController extends GetxController {
   var tabIndex = 0;
+  late PageController pageController;
+
+  @override
+  void onInit() {
+    super.onInit();
+    pageController = PageController();
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
+  }
+
+  void animateToPage(int page) {
+    pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   void changeTabIndex(int index) {
     tabIndex = index;
