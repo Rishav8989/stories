@@ -23,21 +23,13 @@ class BookDetailsPage extends GetView<BookDetailsController> {
             actions: [
               Obx(() {
                 final book = controller.book.value;
-                if (book != null && book.status == 'draft') {  // Only show for draft status
-                  return TextButton.icon(
-                    onPressed: controller.isLoading.value 
-                      ? null 
-                      : controller.publishBook,
-                    icon: const Icon(
-                      Icons.publish,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      'Publish',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                if (book != null && book.status == 'draft') {
+                  return IconButton(
+                    onPressed: controller.isLoading.value ? null : controller.publishBook,
+                    icon: const Icon(Icons.publish),
+                    tooltip: 'Publish',
+                    style: IconButton.styleFrom(
+                      foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
                     ),
                   );
                 }
