@@ -1,4 +1,5 @@
 import 'package:permission_handler/permission_handler.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class PermissionHandlerService {
   // Request storage permissions with handling for permanent denial [[5]][[7]]
@@ -19,13 +20,20 @@ class PermissionHandlerService {
   }
 
   // Request all required permissions [[6]]
+  @override
   Future<bool> requestAllPermissions() async {
     bool storageGranted = await requestStoragePermissions();
-    return storageGranted;
+    bool hasInternet = await checkInternetConnectivity();
+    return storageGranted && hasInternet;
   }
 
   // Open app settings [[8]]
   Future<void> openAppSettings() async {
     await openAppSettings();
+  }
+
+  Future<bool> checkInternetConnectivity() async {
+    final connectivityResult = await (Connectivity().checkConnectivity());
+    return connectivityResult != ConnectivityResult.none;
   }
 }

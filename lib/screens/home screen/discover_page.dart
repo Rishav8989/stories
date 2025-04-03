@@ -21,6 +21,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   Future<void> _fetchBooks() async {
+    if (!mounted) return;
+
     try {
       // Fetch PocketBase URL from environment variables
       final pb = PocketBase(dotenv.get('POCKETBASE_URL'));
@@ -29,9 +31,10 @@ class _DiscoverPageState extends State<DiscoverPage> {
       final resultList = await pb.collection('books').getList(
         page: 1,
         perPage: 50,
-          filter: 'status = "published"',
-
+        filter: 'status = "published"',
       );
+
+      if (!mounted) return;
 
       setState(() {
         _books.clear();
@@ -41,12 +44,23 @@ class _DiscoverPageState extends State<DiscoverPage> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
+      
       setState(() {
         _isLoading = false;
         _errorMessage = 'Failed to load books. Please try again.';
       });
       debugPrint('Error fetching books: $e');
     }
+  }
+
+  // Add refresh functionality
+  Future<void> _refreshBooks() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    await _fetchBooks();
   }
 
   @override
@@ -97,7 +111,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   Widget _buildBody() {
     return Padding(
-      padding: const EdgeInsets.all(8.0), // Reduced padding
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -108,38 +122,53 @@ class _DiscoverPageState extends State<DiscoverPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8), // Reduced spacing
+          const SizedBox(height: 8),
           Expanded(
             child: _books.isEmpty
                 ? const Center(child: Text('No books found'))
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Calculate the number of columns based on screen width
-                      final screenWidth = constraints.maxWidth;
-                      const itemWidth = 200.0; // Desired width for each book item
-                      final crossAxisCount = (screenWidth / itemWidth).floor();
+                : RefreshIndicator(
+                    onRefresh: _refreshBooks,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Calculate items per row based on screen width
+                        final screenWidth = constraints.maxWidth;
+                        int crossAxisCount;
+                        double itemWidth;
+                        double aspectRatio;
+                        
+                        if (screenWidth < 600) { // Mobile screen
+                          crossAxisCount = 2;
+                          itemWidth = (screenWidth - 24) / 2; // Account for padding
+                          aspectRatio = 0.7; // Taller books for mobile
+                        } else {
+                          itemWidth = 200.0;
+                          crossAxisCount = (screenWidth / itemWidth).floor();
+                          aspectRatio = 0.6;
+                        }
 
-                      return GridView.builder(
-                        physics: const ClampingScrollPhysics(), // Prevent overscroll
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
-                          childAspectRatio: 0.75, // Adjusted aspect ratio
-                          crossAxisSpacing: 4, // Further reduced spacing
-                          mainAxisSpacing: 4, // Further reduced spacing
-                        ),
-                        itemCount: _books.length,
-                        itemBuilder: (context, index) {
-                          final book = _books[index];
-                          return BookWidget(
-                            title: book['title'] ?? 'Unknown Title',
-                            coverUrl: book['book_cover'] ?? '',
-                            pbUrl: dotenv.get('POCKETBASE_URL'),
-                            bookId: book['id'],
-                            collectionId: book['collectionId'],
-                          );
-                        },
-                      );
-                    },
+                        return GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            childAspectRatio: aspectRatio,
+                            crossAxisSpacing: 8, // Increased for better spacing
+                            mainAxisSpacing: 16, // Increased for better spacing
+                          ),
+                          itemCount: _books.length,
+                          itemBuilder: (context, index) {
+                            final book = _books[index];
+                            return BookWidget(
+                              title: book['title'] ?? 'Unknown Title',
+                              coverUrl: book['book_cover'] ?? '',
+                              pbUrl: dotenv.get('POCKETBASE_URL'),
+                              bookId: book['id'],
+                              collectionId: book['collectionId'],
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
           ),
         ],
@@ -174,32 +203,31 @@ class BookWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Fixed height for the image container
           SizedBox(
-            width: 150, // Fixed width
-            height: 200, // Fixed height
+            width: 130, // Reduced width
+            height: 180, // Reduced height
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(4), // Smaller radius
               child: coverUrl.isNotEmpty
                   ? Image.network(
-                      '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=0x200',
+                      '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=0x180',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.book, size: 40)),
+                          child: const Center(child: Icon(Icons.book, size: 30)),
                         );
                       },
                     )
                   : Container(
                       color: Colors.grey[300],
-                      child: const Center(child: Icon(Icons.book, size: 40)),
+                      child: const Center(child: Icon(Icons.book, size: 30)),
                     ),
             ),
           ),
-          const SizedBox(height: 4), // Further reduced spacing
+          const SizedBox(height: 2), // Minimal vertical spacing
           SizedBox(
-            height: 40, // Clamp text height
+            height: 32, // Reduced text area height
             child: Text(
               title,
               maxLines: 2,
@@ -207,7 +235,7 @@ class BookWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14, // Reduced font size
+                fontSize: 12, // Smaller font size
               ),
             ),
           ),

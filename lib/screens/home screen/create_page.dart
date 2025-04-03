@@ -126,18 +126,28 @@ class _CreatePageState extends State<CreatePage> {
   Widget _buildUserBooksGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate the number of columns based on screen width
         final screenWidth = constraints.maxWidth;
-        const itemWidth = 200.0; // Desired width for each book item
-        final crossAxisCount = (screenWidth / itemWidth).floor();
+        int crossAxisCount;
+        double itemWidth;
+        double aspectRatio;
+        
+        if (screenWidth < 600) { // Mobile layout
+          crossAxisCount = 2;
+          itemWidth = (screenWidth - 24) / 2;
+          aspectRatio = 0.7;
+        } else { // Tablet/Desktop layout
+          itemWidth = 150.0;
+          crossAxisCount = (screenWidth / itemWidth).floor();
+          aspectRatio = 0.75;
+        }
 
         return GridView.builder(
-          physics: const ClampingScrollPhysics(), // Prevent overscroll
+          physics: const ClampingScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
-            childAspectRatio: 0.75, // Adjusted aspect ratio
-            crossAxisSpacing: 4, // Reduced spacing
-            mainAxisSpacing: 4, // Reduced spacing
+            childAspectRatio: aspectRatio,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
           ),
           itemCount: _userBooks.length,
           itemBuilder: (context, index) {
