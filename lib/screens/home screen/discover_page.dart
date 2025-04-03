@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:stories/widgets/book_layout_widget.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({Key? key}) : super(key: key);
@@ -89,9 +90,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
             child: SizedBox(
               width: minWidth,
               child: Scaffold(
-                appBar: AppBar(
-                  title: const Text('Discover Books'),
-                ),
                 body: _buildBody(),
               ),
             ),
@@ -101,7 +99,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
         // Otherwise, display the Scaffold normally
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Discover Books'),
+            title: Center(child: const Text('Discover Books')),
           ),
           body: _buildBody(),
         );
@@ -149,12 +147,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                         return GridView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.zero,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            childAspectRatio: aspectRatio,
-                            crossAxisSpacing: 8, // Increased for better spacing
-                            mainAxisSpacing: 16, // Increased for better spacing
-                          ),
+                          gridDelegate: getResponsiveGridDelegate(context),
                           itemCount: _books.length,
                           itemBuilder: (context, index) {
                             final book = _books[index];
@@ -164,80 +157,15 @@ class _DiscoverPageState extends State<DiscoverPage> {
                               pbUrl: dotenv.get('POCKETBASE_URL'),
                               bookId: book['id'],
                               collectionId: book['collectionId'],
+                              onTap: () {
+                                // Navigate to book details
+                              },
                             );
                           },
                         );
                       },
                     ),
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BookWidget extends StatelessWidget {
-  final String title;
-  final String coverUrl;
-  final String pbUrl;
-  final String bookId;
-  final String collectionId;
-
-  const BookWidget({
-    Key? key,
-    required this.title,
-    required this.coverUrl,
-    required this.pbUrl,
-    required this.bookId,
-    required this.collectionId,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to book details page
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => BookDetailsPage(bookId: bookId)));
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 130, // Reduced width
-            height: 180, // Reduced height
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4), // Smaller radius
-              child: coverUrl.isNotEmpty
-                  ? Image.network(
-                      '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=0x180',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.book, size: 30)),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey[300],
-                      child: const Center(child: Icon(Icons.book, size: 30)),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 2), // Minimal vertical spacing
-          SizedBox(
-            height: 32, // Reduced text area height
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12, // Smaller font size
-              ),
-            ),
           ),
         ],
       ),

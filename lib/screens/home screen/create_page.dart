@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:stories/utils/user_service.dart'; // Import UserService
 import 'package:pocketbase/pocketbase.dart'; // Import PocketBase
 import 'package:stories/utils/create_new_book.dart'; // Import CreateNewBookPage
+import 'package:stories/widgets/book_layout_widget.dart';
 
 class CreatePage extends StatefulWidget {
   const CreatePage({Key? key}) : super(key: key);
@@ -143,12 +144,7 @@ class _CreatePageState extends State<CreatePage> {
 
         return GridView.builder(
           physics: const ClampingScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
-            childAspectRatio: aspectRatio,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
+          gridDelegate: getResponsiveGridDelegate(context),
           itemCount: _userBooks.length,
           itemBuilder: (context, index) {
             final book = _userBooks[index];
@@ -158,79 +154,13 @@ class _CreatePageState extends State<CreatePage> {
               pbUrl: dotenv.get('POCKETBASE_URL'),
               bookId: book['id'],
               collectionId: book['collectionId'],
+              onTap: () {
+                // Navigate to edit book
+              },
             );
           },
         );
       },
-    );
-  }
-}
-
-class BookWidget extends StatelessWidget {
-  final String title;
-  final String coverUrl;
-  final String pbUrl;
-  final String bookId;
-  final String collectionId;
-
-  const BookWidget({
-    Key? key,
-    required this.title,
-    required this.coverUrl,
-    required this.pbUrl,
-    required this.bookId,
-    required this.collectionId,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to book details page
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => BookDetailsPage(bookId: bookId)));
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Fixed height for the image container
-          SizedBox(
-            width: 150, // Fixed width
-            height: 200, // Fixed height
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: coverUrl.isNotEmpty
-                  ? Image.network(
-                      '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=0x200',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.book, size: 40)),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey[300],
-                      child: const Center(child: Icon(Icons.book, size: 40)),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 4), // Reduced spacing
-          SizedBox(
-            height: 40, // Clamp text height
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14, // Reduced font size
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
