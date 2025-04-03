@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/controller/discover_page_controller.dart';
 import 'package:stories/screens/book_detail_page.dart';
 import 'package:stories/widgets/book_layout_widget.dart';
@@ -8,7 +9,7 @@ import 'package:stories/widgets/book_layout_widget.dart';
 class DiscoverPage extends GetView<DiscoverController> {
   const DiscoverPage({Key? key}) : super(key: key);
 
-  Widget _buildBookRow(List<Map<String, dynamic>> books) {
+  Widget _buildBookRow(List<RecordModel> books) {
     return SizedBox(
       height: 280,
       child: ListView.builder(
@@ -21,15 +22,15 @@ class DiscoverPage extends GetView<DiscoverController> {
             child: SizedBox(
               width: 160,
               child: BookWidget(
-                title: book['title'] ?? 'Unknown Title',
-                coverUrl: book['book_cover'] ?? '',
+                title: book.data['title'] ?? 'Unknown Title',
+                coverUrl: book.data['book_cover'] ?? '',
                 pbUrl: dotenv.get('POCKETBASE_URL'),
-                bookId: book['id'],
-                collectionId: book['collectionId'],
+                bookId: book.id,
+                collectionId: book.collectionId,
                 onTap: () {
-                  Get.to(() => BookDetailsPage(bookId: book['id']));
+                  Get.to(() => BookDetailsPage(bookId: book.id));
                 },
-                thumbSize: '200x300', // Add thumbnail size parameter
+                thumbSize: '200x300',
               ),
             ),
           );

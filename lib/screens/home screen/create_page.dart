@@ -66,17 +66,12 @@ class _CreatePageState extends State<CreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: const Text('My Books')),
-      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Enforce a minimum width of 200 pixels for the entire page
           final minWidth = 200.0;
           final screenWidth = constraints.maxWidth;
 
           if (screenWidth < minWidth) {
-            // If the screen width is less than the minimum width, center the content
             return Center(
               child: SizedBox(
                 width: minWidth,
@@ -84,8 +79,6 @@ class _CreatePageState extends State<CreatePage> {
               ),
             );
           }
-
-          // Otherwise, display the content normally
           return _buildContent();
         },
       ),
@@ -93,31 +86,46 @@ class _CreatePageState extends State<CreatePage> {
   }
 
   Widget _buildContent() {
-    return Column(
-      children: [
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _errorMessage != null
-                  ? Center(child: Text(_errorMessage!))
-                  : _userBooks.isEmpty
-                      ? const Center(child: Text('No books found'))
-                      : Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: _buildUserBooksGrid(),
-                        ),
+    return CustomScrollView(
+      slivers: [
+        const SliverAppBar(
+          floating: true,
+          pinned: false,
+          snap: true,
+          centerTitle: true,
+          title: Text('My Books'),
+          expandedHeight: 50.0,
         ),
-        // Create Book button
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: () {
-              Get.to(() => const CreateNewBookPage());
-            },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-            child: const Text('Create Book'),
+        SliverFillRemaining(
+          hasScrollBody: true,
+          child: Column(
+            children: [
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                        ? Center(child: Text(_errorMessage!))
+                        : _userBooks.isEmpty
+                            ? const Center(child: Text('No books found'))
+                            : Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: _buildUserBooksGrid(),
+                              ),
+              ),
+              // Create Book button
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.to(() => const CreateNewBookPage());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                  child: const Text('Create Book'),
+                ),
+              ),
+            ],
           ),
         ),
       ],
