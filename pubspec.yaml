@@ -18,14 +18,22 @@ dependencies:
   http: ^1.3.0
   image_picker: ^1.1.2
   path: ^1.9.1
+  permission_handler: ^11.4.0
   pocketbase: ^0.22.0
   shared_preferences: ^2.5.2
-
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1 # Add this line for the launcher icons package
+
+# Configuration for flutter_launcher_icons
+flutter_launcher_icons:
+  android: true # Generate icons for Android
+  ios: true # Generate icons for iOS
+  image_path: "assets/icon/logo.jpeg" # Path to your source icon file
+  adaptive_icon_background: "#FFFFFF" # Background color or image for Android adaptive icons
 
 flutter:
   uses-material-design: true
