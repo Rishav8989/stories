@@ -12,6 +12,7 @@ class Book {
   final String bookType;
   final DateTime created;
   final DateTime updated;
+  final Map<String, dynamic>? expand;
 
   Book({
     required this.collectionId,
@@ -27,6 +28,7 @@ class Book {
     required this.bookType,
     required this.created,
     required this.updated,
+    this.expand,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class Book {
       bookType: json['book_type'],
       created: DateTime.parse(json['created']),
       updated: DateTime.parse(json['updated']),
+      expand: json['expand'] as Map<String, dynamic>?,
     );
   }
 }

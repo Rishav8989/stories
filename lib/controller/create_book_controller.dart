@@ -93,8 +93,8 @@ class CreateBookController extends GetxController {
       // Reset form fields
       resetForm();
       
-      // Navigate back to create page
-      Get.off(() => const CreatePage());
+      // Navigate back to CreatePage with refresh trigger
+      Get.off(() => const CreatePage()); // Changed from Get.back() to Get.off()
 
     } catch (e) {
       Get.snackbar(

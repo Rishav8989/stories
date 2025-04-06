@@ -116,17 +116,20 @@ class BookDetailsPage extends GetView<BookDetailsController> {
                             if (confirm == true) {
                               try {
                                 await controller.deleteBook();
-                                Get.back(); // Return to previous screen after deletion
-                                Get.snackbar(
-                                  'SUCCESS',
-                                  'BOOK DELETED SUCCESSFULLY',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                );
+                                Get.back(result: true); // Return to previous screen with deletion result
                               } catch (e) {
-                                Get.snackbar(
-                                  'ERROR',
-                                  'FAILED TO DELETE BOOK',
-                                  snackPosition: SnackPosition.BOTTOM,
+                                // Show error in a dialog instead of snackbar
+                                await Get.dialog(
+                                  AlertDialog(
+                                    title: const Text('Error'),
+                                    content: const Text('Failed to delete book'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Get.back(),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
                                 );
                               }
                             }

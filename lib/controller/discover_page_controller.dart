@@ -100,10 +100,19 @@ class DiscoverController extends GetxController {
   }
 
   Future<void> fetchInitialData() async {
-    await Future.wait([
-      fetchBooks(),
-      fetchUserBooks(),
-    ]);
+    try {
+      isLoading.value = true;
+      // Use Future.wait to load both in parallel
+      await Future.wait([
+        fetchBooks(),
+        fetchUserBooks(),
+      ]);
+    } catch (e) {
+      errorMessage = 'Failed to load books. Please try again.';
+      debugPrint('Error fetching initial data: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> fetchBooks() async {
@@ -116,11 +125,9 @@ class DiscoverController extends GetxController {
       );
 
       books.value = resultList.items;
-      isLoading.value = false;
     } catch (e) {
-      isLoading.value = false;
-      errorMessage = 'Failed to load books. Please try again.';
       debugPrint('Error fetching books: $e');
+      rethrow; // Let fetchInitialData handle the error
     }
   }
 
@@ -140,6 +147,7 @@ class DiscoverController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error fetching user books: $e');
+      rethrow; // Let fetchInitialData handle the error
     }
   }
 

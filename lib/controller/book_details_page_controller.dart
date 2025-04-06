@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:stories/controller/discover_page_controller.dart';
 import 'package:stories/models/book_model.dart';
 import 'package:flutter/material.dart';
 import 'package:stories/utils/user_service.dart';
+import 'package:stories/utils/cached_image_manager.dart';
 
 class BookDetailsController extends GetxController {
   final isLoading = true.obs;
@@ -82,26 +84,25 @@ class BookDetailsController extends GetxController {
         },
       );
 
-      await fetchBookDetails(); // Refresh book details
+      // Find and refresh the DiscoverController if it exists
+      final discoverController = Get.find<DiscoverController>();
+      await discoverController.refreshBooks();
 
-      Get.snackbar(
-        'Success',
-        'Book published successfully!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
-
-      // Navigate back to create page
-      Get.back();
+      // Navigate back and return true to trigger create page refresh
+      Get.back(result: true);
 
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to publish book: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to publish book: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     } finally {
       isLoading.value = false;
@@ -112,8 +113,45 @@ class BookDetailsController extends GetxController {
     try {
       isLoading.value = true;
       await _userService.pb.collection('books').delete(bookId);
+      Get.back(result: true); // Return true to indicate successful deletion
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to delete book',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Widget getBookCoverImage({double? width, double? height}) {
+    final String? imageUrl = book.value?.bookCover != null 
+      ? '${dotenv.get('POCKETBASE_URL')}/api/files/${book.value?.collectionId}/${book.value?.id}/${book.value?.bookCover}'
+      : null;
+
+    return CachedImageManager.getBookCover(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget getAuthorProfileImage({double? width, double? height}) {
+    // Since author is just an ID in the Book model, we need to handle this differently
+    final authorData = book.value?.expand?['author'] as Map<String, dynamic>?;
+    final String? imageUrl = authorData?['avatar'] != null
+      ? '${dotenv.get('POCKETBASE_URL')}/api/files/_pb_users_auth_/${authorData?['id']}/${authorData?['avatar']}'
+      : null;
+
+    return CachedImageManager.getProfileImage(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+    );
   }
 }

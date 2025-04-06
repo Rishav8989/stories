@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:stories/screens/book_detail_page.dart';
 import 'package:stories/utils/user_service.dart'; // Import UserService
 import 'package:pocketbase/pocketbase.dart'; // Import PocketBase
 import 'package:stories/utils/create_new_book.dart'; // Import CreateNewBookPage
@@ -135,8 +136,12 @@ class _CreatePageState extends State<CreatePage> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
-                  onPressed: () {
-                    Get.to(() => const CreateNewBookPage());
+                  onPressed: () async {
+                    final result = await Get.to(() => const CreateNewBookPage());
+                    if (result == true) {
+                      // Refresh the book list when returning from create page
+                      _fetchUserBooks();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -181,8 +186,15 @@ class _CreatePageState extends State<CreatePage> {
               pbUrl: dotenv.get('POCKETBASE_URL'),
               bookId: book['id'],
               collectionId: book['collectionId'],
-              onTap: () {
-                // Navigate to edit book
+              onTap: () async {
+                final result = await Get.to(() => BookDetailsPage(bookId: book['id']));
+                // Refresh the books list if a book was deleted
+                if (result == true) {
+                  setState(() {
+                    _userBooks.removeWhere((b) => b['id'] == book['id']);
+                  });
+                  await _fetchUserBooks(); // Refresh the full list from server
+                }
               },
             );
           },
