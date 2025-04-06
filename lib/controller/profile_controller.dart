@@ -4,6 +4,7 @@ import '../utils/user_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/material.dart';
 
 class ProfileController extends GetxController {
   final Rx<Map<String, dynamic>> userData = Rx<Map<String, dynamic>>({});
@@ -100,5 +101,82 @@ class ProfileController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Widget buildAvatarWidget(BuildContext context, Map<String, dynamic>? user) {
+    return GestureDetector(
+      onTap: () async {
+        await uploadUserProfilePicture();
+      },
+      onLongPress: () {
+        showModalBottomSheet(
+          context: context,
+          builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Image'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await uploadUserProfilePicture();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image),
+                title: const Text('View Full Image'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (user?['avatar'] != null && user?['avatar'].isNotEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 500,
+                            maxHeight: 500,
+                          ),
+                          child: Image.network(
+                            '${dotenv.get('POCKETBASE_URL')}/api/files/${user?['collectionId']}/${user?['id']}/${user?['avatar']}',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 16),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            user?['avatar'] != null && user?['avatar'].isNotEmpty
+                ? CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(
+                      '${dotenv.get('POCKETBASE_URL')}/api/files/${user?['collectionId']}/${user?['id']}/${user?['avatar']}?thumb=100x100',
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).cardColor,
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.account_circle,
+                      size: 100,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
   }
 }

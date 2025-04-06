@@ -25,9 +25,10 @@ class CreateBookController extends GetxController {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 70,
+      // Thumbnail size settings
+      maxWidth: 200,  // Reduced from 800
+      maxHeight: 300, // Reduced from 800
+      imageQuality: 70, // Slightly increased quality for thumbnails
     );
 
     if (image != null) {

@@ -41,144 +41,53 @@ class ProfileLandingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  GestureDetector( // [[1]]
-                    onTap: () async {
-                      await profileController.uploadUserProfilePicture();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: user['avatar'] != null && user['avatar'].isNotEmpty
-                                ? CircleAvatar(
-                                    radius: 60,
-                                    backgroundImage: NetworkImage(
-                                      '${dotenv.get('POCKETBASE_URL')}/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}?thumb=200x200',
-                                    ),
-                                  )
-                                : Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                    ),
-                                    padding: const EdgeInsets.all(16),
-                                    child: const Icon(
-                                      Icons.account_circle,
-                                      size: 120,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  profileController.buildAvatarWidget(context, user),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Card(
-                      elevation: 2,
+                      elevation: 1,  // Reduced from 2
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.person, color: Colors.blue, size: 32),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Name', style: TextStyle(color: Colors.grey)),
-                                    Text(
-                                      user['name'] ?? 'Unknown',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            _buildInfoRow(
+                              context: context,
+                              icon: Icons.person,
+                              label: 'Name',
+                              value: user['name'] ?? 'Unknown',
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                const Icon(Icons.email, color: Colors.blue, size: 32),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Email', style: TextStyle(color: Colors.grey)),
-                                    Text(
-                                      user['email'] ?? 'Unknown',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            _buildInfoRow(
+                              context: context,
+                              icon: Icons.email,
+                              label: 'Email',
+                              value: user['email'] ?? 'Unknown',
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                const Icon(Icons.calendar_today, color: Colors.blue, size: 32),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Date Joined', style: TextStyle(color: Colors.grey)),
-                                    Text(
-                                      DateTime.parse(user['created'])
-                                          .toLocal()
-                                          .toString()
-                                          .split('.')
-                                          .first,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            _buildInfoRow(
+                              context: context,
+                              icon: Icons.calendar_today,
+                              label: 'Date Joined',
+                              value: DateTime.parse(user['created'])
+                                  .toLocal()
+                                  .toString()
+                                  .split('.')
+                                  .first,
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Icon(
-                                  user['verified'] == true
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: user['verified'] == true
-                                      ? Colors.green
-                                      : Colors.red,
-                                  size: 32,
-                                ),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Account Status', style: TextStyle(color: Colors.grey)),
-                                    Text(
-                                      user['verified'] == true
-                                          ? 'Verified'
-                                          : 'Not Verified',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            _buildInfoRow(
+                              context: context,
+                              icon: user['verified'] == true
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              iconColor: user['verified'] == true
+                                  ? Colors.green
+                                  : Colors.red,
+                              label: 'Account Status',
+                              value: user['verified'] == true
+                                  ? 'Verified'
+                                  : 'Not Verified',
                             ),
                           ],
                         ),
@@ -191,6 +100,41 @@ class ProfileLandingPage extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? iconColor,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: iconColor ?? Theme.of(context).colorScheme.primary,
+          size: 28,  // Reduced from 32
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

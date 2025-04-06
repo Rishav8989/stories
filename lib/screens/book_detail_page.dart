@@ -20,7 +20,7 @@ class BookDetailsPage extends GetView<BookDetailsController> {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: Obx(() => Text(controller.book.value?.title?.toUpperCase() ?? 'BOOK DETAILS')),
+            title: Obx(() => Center(child: Text(controller.book.value?.title?.toUpperCase() ?? 'BOOK DETAILS'))),
             actions: [
               Obx(() {
                 final book = controller.book.value;
