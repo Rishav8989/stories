@@ -12,7 +12,7 @@ class ProfileLandingPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('View Profile'.tr),
+        title: Center(child: Text('View Profile'.tr)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),

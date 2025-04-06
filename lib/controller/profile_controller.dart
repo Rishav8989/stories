@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:stories/utils/cached_image_manager.dart';
 import '../utils/user_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -136,8 +137,10 @@ class ProfileController extends GetxController {
                             maxWidth: 500,
                             maxHeight: 500,
                           ),
-                          child: Image.network(
+                          child: CachedImageManager.getProfileImage(
                             '${dotenv.get('POCKETBASE_URL')}/api/files/${user?['collectionId']}/${user?['id']}/${user?['avatar']}',
+                            width: 500,
+                            height: 500,
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -156,13 +159,20 @@ class ProfileController extends GetxController {
           alignment: Alignment.center,
           children: [
             user?['avatar'] != null && user?['avatar'].isNotEmpty
-                ? CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(
-                      '${dotenv.get('POCKETBASE_URL')}/api/files/${user?['collectionId']}/${user?['id']}/${user?['avatar']}?thumb=100x100',
+                ? SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: ClipOval(
+                      child: CachedImageManager.getProfileImage(
+                        '${dotenv.get('POCKETBASE_URL')}/api/files/${user?['collectionId']}/${user?['id']}/${user?['avatar']}?thumb=100x100',
+                        width: 100,
+                        height: 100,
+                      ),
                     ),
                   )
                 : Container(
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Theme.of(context).cardColor,
@@ -170,7 +180,7 @@ class ProfileController extends GetxController {
                     padding: const EdgeInsets.all(12),
                     child: Icon(
                       Icons.account_circle,
-                      size: 100,
+                      size: 60,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),

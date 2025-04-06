@@ -235,6 +235,44 @@ class BookDetailsPage extends GetView<BookDetailsController> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      if (book.author == controller.userId) // Only show buttons for the author
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: Will implement description handling
+                                },
+                                icon: const Icon(Icons.description),
+                                label: const Text(
+                                  'ADD DESCRIPTION',
+                                  style: TextStyle(letterSpacing: 0.5),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: Will implement chapter handling
+                                },
+                                icon: const Icon(Icons.add_circle_outline),
+                                label: const Text(
+                                  'ADD CHAPTER',
+                                  style: TextStyle(letterSpacing: 0.5),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

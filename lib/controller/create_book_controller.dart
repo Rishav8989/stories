@@ -18,7 +18,7 @@ class CreateBookController extends GetxController {
     'Fantasy', 'Fiction', 'Science', 'Thriller', 'Horror', 'Romance',
     'Historical', 'Literary', 'Young Adult', 'Children\'s Fiction',
     'Adventure', 'Humor', 'Comedy', 'Fanfiction', 'Magical',
-    'Biography', 'Non-Fiction', 'Other'
+    'Biography', 'Non-Fiction', 'other'
   ];
 
   Future<void> pickImage() async {
