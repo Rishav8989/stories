@@ -7,6 +7,7 @@ environment:
   sdk: ^3.7.0
 
 dependencies:
+  build_runner: ^2.4.15
   cached_network_image: ^3.4.1
   connectivity_plus: ^6.1.3
   file_picker: ^9.2.3
@@ -20,6 +21,7 @@ dependencies:
   http: ^1.3.0
   image_picker: ^1.1.2
   intl: ^0.20.2
+  mockito: ^5.4.5
   path: ^1.9.1
   permission_handler: ^11.4.0
   pocketbase: ^0.22.0
@@ -30,6 +32,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1 # Add this line for the launcher icons package
+  test: ^1.25.15
 
 # Configuration for flutter_launcher_icons
 flutter_launcher_icons:

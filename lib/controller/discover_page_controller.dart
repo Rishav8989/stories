@@ -23,8 +23,10 @@ class DiscoverController extends GetxController {
 
   @override
   void onClose() {
+    // Cancel the subscriptions
     _booksSubscription?.call();
     _userBooksSubscription?.call();
+    // Remove the pb.close() call since PocketBase doesn't have this method
     super.onClose();
   }
 
