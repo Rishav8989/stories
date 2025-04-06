@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:stories/screens/book_detail_page.dart';
+import 'package:stories/screens/bookDetail/book_detail_page.dart';
 import 'package:stories/utils/cached_image_manager.dart';
 
 class BookWidget extends StatelessWidget {

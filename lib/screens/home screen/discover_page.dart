@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/controller/discover_page_controller.dart';
-import 'package:stories/screens/book_detail_page.dart';
+import 'package:stories/screens/bookDetail/book_detail_page.dart';
 import 'package:stories/widgets/book_layout_widget.dart';
 
 class DiscoverPage extends GetView<DiscoverController> {

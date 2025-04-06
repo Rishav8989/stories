@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:stories/screens/book_detail_page.dart';
+import 'package:stories/screens/bookDetail/book_detail_page.dart';
 import 'package:stories/utils/user_service.dart'; // Import UserService
 import 'package:pocketbase/pocketbase.dart'; // Import PocketBase
 import 'package:stories/utils/create_new_book.dart'; // Import CreateNewBookPage

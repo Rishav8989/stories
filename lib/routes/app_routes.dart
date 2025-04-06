@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:stories/screens/home_page.dart';
-import 'package:stories/screens/login_page.dart';
-import 'package:stories/screens/registration_page.dart';
+import 'package:stories/utils/auth/login_page.dart';
+import 'package:stories/utils/auth/registration_page.dart';
 
 class AppRoutes {
   static const String home = '/home';
