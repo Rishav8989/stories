@@ -38,15 +38,17 @@ class ProfileLandingPage extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  profileController.buildAvatarWidget(context, user),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Card(
-                      elevation: 1,  // Reduced from 2
-                      child: Padding(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 1,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: profileController.buildAvatarWidget(context, user),
+                      ),
+                      Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,9 +94,9 @@ class ProfileLandingPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

@@ -124,7 +124,7 @@ class ProfileController extends GetxController {
               ),
               ListTile(
                 leading: const Icon(Icons.image),
-                title: const Text('View Full Image'),
+                title: const Text('View Image'),
                 onTap: () {
                   Navigator.pop(context);
                   if (user?['avatar'] != null && user?['avatar'].isNotEmpty) {
