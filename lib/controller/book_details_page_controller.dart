@@ -10,6 +10,7 @@ import 'package:stories/utils/cached_image_manager.dart';
 class BookDetailsController extends GetxController {
   final isLoading = true.obs;
   final Rx<Book?> book = Rx<Book?>(null);
+  final hasDescription = false.obs;
   String? errorMessage;
   String? userId;
   final String bookId;
@@ -24,6 +25,7 @@ class BookDetailsController extends GetxController {
     super.onInit();
     _initializeUserId();
     fetchBookDetails();
+    checkForDescription();
   }
 
   Future<void> _initializeUserId() async {
@@ -42,6 +44,17 @@ class BookDetailsController extends GetxController {
     } catch (e) {
       errorMessage = 'Failed to load book details';
       isLoading.value = false;
+    }
+  }
+
+  Future<void> checkForDescription() async {
+    try {
+      final description = await _userService.pb.collection('chapters').getFirstListItem(
+        'book = "$bookId" && type = "description"',
+      );
+      hasDescription.value = description != null;
+    } catch (e) {
+      hasDescription.value = false;
     }
   }
 
@@ -121,6 +134,70 @@ class BookDetailsController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> addDescription(String content) async {
+    try {
+      isLoading.value = true;
+      
+      // First, check if a description already exists
+      final existingDescriptions = await _userService.pb.collection('chapters').getFullList(
+        filter: 'book = "$bookId" && type = "description"',
+      );
+
+      // If description already exists, show error
+      if (existingDescriptions.isNotEmpty) {
+        Get.dialog(
+          AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Book already has a description. Please edit the existing description instead.'),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // Create new description
+      await _userService.pb.collection('chapters').create(body: {
+        "book": bookId,
+        "title": "Description",
+        "content": content,
+        "status": "draft",
+        "type": "description",
+        "order_number": 0 as int  // Explicitly cast as integer
+      });
+
+      await fetchBookDetails();  // Refresh book details
+      Get.back();  // Close the dialog
+      
+      Get.snackbar(
+        'Success',
+        'Description added successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to add description: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     } finally {
       isLoading.value = false;

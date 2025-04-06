@@ -240,20 +240,56 @@ class BookDetailsPage extends GetView<BookDetailsController> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Will implement description handling
-                                },
-                                icon: const Icon(Icons.description),
-                                label: const Text(
-                                  'ADD DESCRIPTION',
-                                  style: TextStyle(letterSpacing: 0.5),
+                            Obx(() => controller.hasDescription.value 
+                              ? const SizedBox() // Hide button if description exists
+                              : Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      final TextEditingController descriptionController = TextEditingController();
+    
+                                      Get.dialog(
+                                        AlertDialog(
+                                          title: const Text('Add Description'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              TextField(
+                                                controller: descriptionController,
+                                                maxLines: 10,
+                                                decoration: const InputDecoration(
+                                                  hintText: 'Enter book description...',
+                                                  border: OutlineInputBorder(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Get.back(),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                if (descriptionController.text.trim().isNotEmpty) {
+                                                  controller.addDescription(descriptionController.text.trim());
+                                                }
+                                              },
+                                              child: const Text('Save'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.description),
+                                    label: const Text(
+                                      'ADD DESCRIPTION',
+                                      style: TextStyle(letterSpacing: 0.5),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                    ),
+                                  ),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                ),
-                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
