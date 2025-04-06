@@ -27,13 +27,22 @@ class _CreatePageState extends State<CreatePage> {
     _fetchUserBooks();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _fetchUserBooks() async {
+    if (!mounted) return;
+
     try {
       // Get the logged-in user's ID
       final userId = await _userService.getUserId();
 
+      if (!mounted) return;
+
       if (userId == null) {
-        setState(() {
+        _safeSetState(() {
           _isLoading = false;
           _errorMessage = 'User not logged in.';
         });
@@ -47,7 +56,9 @@ class _CreatePageState extends State<CreatePage> {
             filter: 'author = "$userId"', // Filter books by the logged-in user's ID
           );
 
-      setState(() {
+      if (!mounted) return;
+
+      _safeSetState(() {
         _userBooks.clear();
         for (var item in resultList.items) {
           _userBooks.add(item.toJson());
@@ -55,11 +66,19 @@ class _CreatePageState extends State<CreatePage> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
+      if (!mounted) return;
+      
+      _safeSetState(() {
         _isLoading = false;
         _errorMessage = 'Failed to load books. Please try again.';
       });
       debugPrint('Error fetching user books: $e');
+    }
+  }
+
+  void _safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
     }
   }
 

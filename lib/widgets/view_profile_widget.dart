@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/profile_controller.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProfileLandingPage extends StatelessWidget {
   const ProfileLandingPage({Key? key}) : super(key: key);
@@ -53,7 +54,7 @@ class ProfileLandingPage extends StatelessWidget {
                                 ? CircleAvatar(
                                     radius: 60,
                                     backgroundImage: NetworkImage(
-                                      'http://rishavpocket.duckdns.org/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}?thumb=200x200',
+                                      '${dotenv.get('POCKETBASE_URL')}/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}?thumb=200x200',
                                     ),
                                   )
                                 : Container(

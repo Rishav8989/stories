@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:stories/screens/book_detail_page.dart';
+import 'package:stories/utils/cached_image_manager.dart';
 
 class BookWidget extends StatelessWidget {
   final String title;
@@ -10,7 +11,7 @@ class BookWidget extends StatelessWidget {
   final String bookId;
   final String collectionId;
   final VoidCallback? onTap;
-  final String thumbSize;  // Add this parameter
+  final String? thumbSize; // Add thumbSize parameter
 
   const BookWidget({
     Key? key,
@@ -20,74 +21,38 @@ class BookWidget extends StatelessWidget {
     required this.bookId,
     required this.collectionId,
     this.onTap,
-    this.thumbSize = '150x200',  // Add default value
+    this.thumbSize, // Add to constructor
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    
-    // Calculate dimensions maintaining 3:4 aspect ratio with reduced padding for mobile
-    final coverWidth = isMobile 
-        ? (screenWidth - 32) / 3 // Reduced padding for mobile
-        : 150.0;
-    final coverHeight = coverWidth * 1.33;
+    final String fullImageUrl = coverUrl.isNotEmpty
+        ? '$pbUrl/api/files/$collectionId/$bookId/$coverUrl${thumbSize != null ? '?thumb=$thumbSize' : ''}'
+        : '';
 
-    return Padding(
-      padding: EdgeInsets.all(isMobile ? 4.0 : 8.0), // Reduced padding for mobile
-      child: GestureDetector(
-        onTap: () => Get.to(() => BookDetailsPage(bookId: bookId)),
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min, // Add this to prevent expansion
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              width: coverWidth,
-              height: coverHeight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(isMobile ? 2 : 4),
-                child: coverUrl.isNotEmpty
-                    ? Image.network(
-                        '$pbUrl/api/files/$collectionId/$bookId/$coverUrl?thumb=$thumbSize',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: Center(
-                              child: Icon(Icons.broken_image, 
-                                size: isMobile ? 20 : 40,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey[300],
-                        child: Center(
-                          child: Icon(Icons.image, 
-                            size: isMobile ? 20 : 40,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
+            Expanded(
+              child: CachedImageManager.getBookCover(
+                fullImageUrl,
+                fit: BoxFit.cover,
               ),
             ),
-            SizedBox(height: isMobile ? 4 : 8), // Reduced spacing for mobile
-            SizedBox(
-              height: isMobile ? 40 : 48, // Increased height for more text space
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
-                title.toUpperCase(), // Convert text to uppercase
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: isMobile ? 12 : 14, // Increased font sizes
-                  height: 1.2,
-                  letterSpacing: 0.5, // Add letter spacing for better readability of caps
-                ),
               ),
             ),
           ],
