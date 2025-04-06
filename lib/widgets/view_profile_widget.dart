@@ -36,7 +36,7 @@ class ProfileLandingPage extends StatelessWidget {
 
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: const BoxConstraints(maxWidth: 500),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -112,31 +112,34 @@ class ProfileLandingPage extends StatelessWidget {
     required String value,
     Color? iconColor,
   }) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: iconColor ?? Theme.of(context).colorScheme.primary,
-          size: 28,  // Reduced from 32
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 14,
+    return Padding(
+      padding: const EdgeInsets.only(left: 100.0),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: iconColor ?? Theme.of(context).colorScheme.primary,
+            size: 28,  // Reduced from 32
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
               ),
-            ),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ],
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
