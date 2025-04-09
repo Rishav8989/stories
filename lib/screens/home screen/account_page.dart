@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/auth_controller.dart';
+import 'package:stories/controller/font_controller.dart';
 import 'package:stories/utils/theme/theme_selector.dart';
 import 'package:stories/utils/translation/language_selector.dart';
 import 'package:stories/utils/translation/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/widgets/logout_button.dart';
 import 'package:stories/widgets/view_profile_widget.dart';
+import 'package:stories/widgets/font_selector.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class AccountPage extends StatelessWidget {
     final AuthController authController = Get.find<AuthController>();
     final LocaleController localeController = Get.put(LocaleController());
     final ThemeController themeController = Get.find<ThemeController>();
+    final FontController fontController = Get.put(FontController());
     const double maxWidth = 400.0;
 
     return Scaffold(
@@ -53,6 +56,7 @@ class AccountPage extends StatelessWidget {
                 onTap: () => Get.to(() => const LanguageSelectionPage()),
               ),
               ThemeSelectorWidget(themeController: themeController),
+              FontSelector(fontController: fontController),
               _buildListTile(
                 context: context,
                 icon: Icons.info,
