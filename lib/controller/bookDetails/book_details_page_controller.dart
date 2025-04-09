@@ -100,7 +100,8 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
         perPage: 1,
       );
       if (result.items.isEmpty) return 1;
-      return (result.items.first.data['order_number'] as int) + 1;
+      final lastOrderNumber = result.items.first.data['order_number'] as int;
+      return lastOrderNumber + 1;
     } catch (e) {
       print("Error getting next order number: $e");
       return 1;

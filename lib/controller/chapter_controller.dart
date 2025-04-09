@@ -49,7 +49,7 @@ class ChapterController extends GetxController {
     required String bookId,
     required String title,
     required String content,
-    String type = 'content',
+    required int orderNumber,
   }) async {
     if (!await isBookOwner(bookId)) {
       Get.snackbar('Error', 'Only the book author can add chapters', backgroundColor: Colors.red);
@@ -58,15 +58,13 @@ class ChapterController extends GetxController {
 
     isLoading.value = true;
     try {
-      final orderNumber = await getNextOrderNumber(bookId);
-      
       await _userService.pb.collection('chapters').create(body: {
-        "book": bookId,
-        "title": title,
-        "content": content,
-        "status": "draft",
-        "type": type,
-        "order_number": orderNumber,
+        'book': bookId,
+        'title': title,
+        'content': content,
+        'type': 'content',
+        'order_number': orderNumber,
+        'status': 'draft',
       });
       
       // Refresh the chapters list in the book details controller
