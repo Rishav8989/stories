@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/chapter_controller.dart';
+import 'package:stories/screens/chapter/edit_chapter_page.dart';
 
 class ChapterContentPage extends StatelessWidget {
   final String chapterId;
@@ -56,9 +57,16 @@ class ChapterContentPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit Chapter',
-            onPressed: () {
-              // TODO: Implement edit chapter functionality
-              Get.snackbar('Coming Soon', 'Chapter editing will be available soon!');
+            onPressed: () async {
+              final chapterContent = await controller.getChapterContent(chapterId);
+              if (chapterContent != null) {
+                Get.to(() => EditChapterPage(
+                      chapterId: chapterId,
+                      bookId: bookId,
+                      initialTitle: chapterContent['title'] ?? '',
+                      initialContent: chapterContent['content'] ?? '',
+                    ));
+              }
             },
           ),
         ],

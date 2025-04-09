@@ -5,7 +5,7 @@ import 'package:stories/models/book_model.dart';
 import 'package:stories/screens/bookDetail/book_detail_info_row.dart';
 
 class BookDetailInfoCard extends StatelessWidget {
-  final Book book;
+  final BookModel book;
   final BookDetailsController controller;
 
   const BookDetailInfoCard({
@@ -33,7 +33,7 @@ class BookDetailInfoCard extends StatelessWidget {
             const SizedBox(height: 16),
             BookDetailInfoRow(
               label: 'LAST UPDATED',
-              value: DateFormat.yMMMd().format(book.updated).toUpperCase(),
+              value: DateFormat.yMMMd().format(book.updatedAt).toUpperCase(),
             ),
             const SizedBox(height: 16),
             BookDetailInfoRow(

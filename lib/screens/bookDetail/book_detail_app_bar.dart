@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/controller/bookDetails/book_management_logic.dart';
+import 'package:stories/screens/bookDetail/reorder_chapters_page.dart';
+import 'package:stories/screens/bookDetail/edit_book_page.dart';
 
 class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final BookDetailsController controller;
@@ -182,11 +184,9 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                         }
                       }
                     } else if (value == 'edit') {
-                      // TODO: Implement book editing
-                      Get.snackbar('Coming Soon', 'Book editing will be available soon!');
+                      Get.to(() => EditBookPage(book: controller.book.value!));
                     } else if (value == 'reorder') {
-                      // TODO: Implement chapter reordering
-                      Get.snackbar('Coming Soon', 'Chapter reordering will be available soon!');
+                      Get.to(() => ReorderChaptersPage(controller: controller));
                     }
                   },
                 ),

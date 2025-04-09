@@ -90,7 +90,7 @@ extension BookDescriptionLogic on BookDetailsController {
   }
 
   void showEditDescriptionDialog() {
-    final controller = TextEditingController(text: description.value ?? '');
+    final controller = TextEditingController(text: (description.value?.content ?? '') as String);
 
     Get.dialog(AlertDialog(
       title: Text(hasDescription.value ? 'Edit' : 'Add'),

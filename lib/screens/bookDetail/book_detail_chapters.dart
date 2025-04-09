@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/screens/chapter/chapter_content_page.dart';
+import 'package:stories/screens/chapter/reorder_chapters_page.dart';
 
 class BookDetailChapters extends StatelessWidget {
   final BookDetailsController controller;
@@ -22,9 +23,9 @@ class BookDetailChapters extends StatelessWidget {
 
       // Filter out description chapter (order_number 0) and sort by order_number
       final sortedChapters = controller.chapters
-          .where((chapter) => chapter['order_number'] != 0)
+          .where((chapter) => chapter.orderNumber != 0)
           .toList()
-        ..sort((a, b) => (a['order_number'] as int).compareTo(b['order_number'] as int));
+        ..sort((a, b) => a.orderNumber.compareTo(b.orderNumber));
 
       if (sortedChapters.isEmpty) return const SizedBox.shrink();
 
@@ -47,8 +48,7 @@ class BookDetailChapters extends StatelessWidget {
                   icon: const Icon(Icons.reorder),
                   tooltip: 'Reorder Chapters',
                   onPressed: () {
-                    // TODO: Implement chapter reordering
-                    Get.snackbar('Coming Soon', 'Chapter reordering will be available soon!');
+                    Get.to(() => ReorderChaptersPage(controller: controller));
                   },
                 ),
             ],
@@ -69,8 +69,8 @@ class BookDetailChapters extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final chapter = sortedChapters[index];
-                final orderNumber = chapter['order_number'] as int;
-                final status = chapter['status'] as String?;
+                final orderNumber = chapter.orderNumber;
+                final status = chapter.status;
                 return Container(
                   decoration: BoxDecoration(
                     color: status == 'draft' 
@@ -98,7 +98,7 @@ class BookDetailChapters extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      chapter['title'] ?? 'Untitled Chapter',
+                      chapter.title,
                       style: textTheme.bodyMedium?.copyWith(
                         letterSpacing: 0.5,
                         fontWeight: FontWeight.w500,
@@ -131,9 +131,9 @@ class BookDetailChapters extends StatelessWidget {
                     ),
                     onTap: () {
                       Get.to(() => ChapterContentPage(
-                            chapterId: chapter['id'],
+                            chapterId: chapter.id,
                             bookId: controller.bookId,
-                            chapterTitle: chapter['title'],
+                            chapterTitle: chapter.title,
                             status: status,
                           ));
                     },

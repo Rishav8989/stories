@@ -5,7 +5,7 @@ import 'package:stories/controller/bookDetails/book_details_page_controller.dart
 import 'package:stories/models/book_model.dart';
 
 class BookDetailDescription extends StatelessWidget {
-  final Book book;
+  final BookModel book;
   final BookDetailsController controller;
 
   const BookDetailDescription({
@@ -50,7 +50,7 @@ class BookDetailDescription extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    controller.description.value ?? '',
+                    (controller.description.value?.content ?? '') as String,
                     style: textTheme.bodyMedium?.copyWith(
                       letterSpacing: 0.5,
                     ),

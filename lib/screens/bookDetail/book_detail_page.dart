@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/screens/bookDetail/book_detail_app_bar.dart';
 import 'package:stories/screens/bookDetail/book_detail_content.dart';
+import 'package:stories/utils/user_service.dart';
 
 class BookDetailsPage extends GetView<BookDetailsController> {
   final String bookId;
@@ -15,7 +17,11 @@ class BookDetailsPage extends GetView<BookDetailsController> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<BookDetailsController>(
-      init: BookDetailsController(bookId: bookId),
+      init: BookDetailsController(
+        bookId: bookId,
+        userService: Get.find<UserService>(),
+        pb: Get.find<PocketBase>(),
+      ),
       builder: (controller) {
         return Scaffold(
           appBar: BookDetailAppBar(controller: controller),

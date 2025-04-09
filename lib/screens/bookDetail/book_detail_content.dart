@@ -13,7 +13,7 @@ class BookDetailContent extends StatelessWidget {
   // Make controller final as it shouldn't change after initialization
   final BookDetailsController controller;
   // Keep book final for initial data, but rely on controller.book for updates
-  final Book book;
+  final BookModel book;
 
   const BookDetailContent({
     Key? key,
@@ -33,7 +33,7 @@ class BookDetailContent extends StatelessWidget {
       // Use the initial book as a fallback if the controller's book is null (e.g., during initial load)
       final currentBook = controller.book.value ?? book;
       // Get the image URL from the controller
-      final imageUrl = controller.bookCoverThumbnailUrl; // Use the new getter
+      final imageUrl = controller.getBookCoverThumbnailUrl();
 
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),

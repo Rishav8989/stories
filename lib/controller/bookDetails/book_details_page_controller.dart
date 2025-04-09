@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -5,23 +6,27 @@ import 'package:stories/controller/bookDetails/book_description_logic.dart';
 import 'package:stories/models/book_model.dart';
 import 'package:stories/utils/user_service.dart';
 import 'package:stories/controller/chapter_controller.dart';
+import 'package:stories/controller/bookDetails/chapter_management_logic.dart';
+import 'package:stories/models/chapter_model.dart';
 
-class BookDetailsController extends GetxController {
-  final isLoading = true.obs;
-  final Rx<Book?> book = Rx<Book?>(null);
-  final hasDescription = false.obs;
-  final Rx<String?> description = Rx<String?>(null);
-  final Rx<String?> descriptionId = Rx<String?>(null);
-  final RxList<Map<String, dynamic>> chapters = <Map<String, dynamic>>[].obs;
-  String? errorMessage;
-  String? userId;
+class BookDetailsController extends GetxController with ChapterManagementLogic {
+  final UserService userService;
   final String bookId;
-  final UserService _userService;
-  
-  UserService get userService => _userService;
+  final PocketBase pb;
+  final Rx<BookModel?> book = Rx<BookModel?>(null);
+  final RxList<ChapterModel> chapters = <ChapterModel>[].obs;
+  final RxBool isLoading = false.obs;
+  final hasDescription = false.obs;
+  final Rx<ChapterModel?> description = Rx<ChapterModel?>(null);
+  final Rx<String?> descriptionId = Rx<String?>(null);
+  String? userId;
+  String? errorMessage;
 
-  BookDetailsController({required this.bookId})
-      : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
+  BookDetailsController({
+    required this.userService,
+    required this.bookId,
+    required this.pb,
+  });
 
   @override
   void onInit() {
@@ -33,52 +38,106 @@ class BookDetailsController extends GetxController {
   }
 
   Future<void> _initializeUserId() async {
-    userId = await _userService.getUserId();
+    userId = await userService.getUserId();
   }
 
   Future<void> fetchBookDetails() async {
-    isLoading.value = true;
-    errorMessage = null;
-    book.value = null;
-
     try {
-      final record = await userService.pb
-          .collection('books')
-          .getOne(bookId, expand: 'author');
-      book.value = Book.fromJson(record.data);
+      isLoading.value = true;
+      final bookResult = await pb.collection('books').getOne(bookId);
+      book.value = BookModel.fromJson(bookResult.toJson());
+      await fetchDescription();
+      await fetchChapters();
     } catch (e) {
-      errorMessage = 'Failed to load book details: ${e.toString()}';
+      errorMessage = 'Failed to fetch book details: $e';
       Get.snackbar('Error', errorMessage!, snackPosition: SnackPosition.BOTTOM);
-      print("Error fetching book details: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
+  Future<void> fetchDescription() async {
+    hasDescription.value = false;
+    description.value = null;
+    descriptionId.value = null;
+
+    try {
+      final result = await pb.collection('chapters').getFirstListItem(
+        'book = "$bookId" && type = "description"',
+      );
+      description.value = ChapterModel.fromJson(result.toJson());
+      hasDescription.value = true;
+      descriptionId.value = result.id;
+    } catch (e) {
+      if (e is ClientException && e.statusCode == 404) {
+        hasDescription.value = false;
+      } else {
+        print("Error fetching description: $e");
+        Get.snackbar('Error', 'Failed to fetch description', backgroundColor: Colors.red);
+      }
+    }
+  }
+
+  @override
   Future<void> fetchChapters() async {
     try {
-      final chapterController = Get.put(ChapterController());
-      final chaptersList = await chapterController.getChapters(bookId);
-      chapters.value = chaptersList;
+      final result = await pb.collection('chapters').getList(
+        filter: 'book = "$bookId" && type = "content"',
+        sort: 'order_number',
+      );
+      chapters.value = result.items.map((item) => ChapterModel.fromJson(item.toJson())).toList();
     } catch (e) {
       print("Error fetching chapters: $e");
+      Get.snackbar('Error', 'Failed to fetch chapters', backgroundColor: Colors.red);
     }
   }
 
-  int get nextChapterOrderNumber {
-    if (chapters.isEmpty) return 1;
-    final maxOrder = chapters.map((chapter) => chapter['order_number'] as int).reduce((a, b) => a > b ? a : b);
-    return maxOrder + 1;
+  Future<int> getNextChapterOrderNumber() async {
+    try {
+      final result = await pb.collection('chapters').getList(
+        filter: 'book = "$bookId" && type = "content"',
+        sort: '-order_number',
+        perPage: 1,
+      );
+      if (result.items.isEmpty) return 1;
+      return (result.items.first.data['order_number'] as int) + 1;
+    } catch (e) {
+      print("Error getting next order number: $e");
+      return 1;
+    }
   }
 
-  String? get bookCoverThumbnailUrl {
-    final currentBook = book.value;
-    if (currentBook?.bookCover != null &&
-        currentBook?.collectionId != null &&
-        currentBook?.id != null) {
-      return '${dotenv.get('POCKETBASE_URL')}/api/files/'
-          '${currentBook!.collectionId}/${currentBook.id}/${currentBook.bookCover}?thumb=150x200';
+  String getBookCoverThumbnailUrl() {
+    if (book.value?.bookCover == null) return '';
+    return '${pb.baseUrl}/api/files/books/${book.value!.id}/${book.value!.bookCover}?thumb=100x100';
+  }
+
+  Future<void> updateBook(String bookId, String title, String description) async {
+    try {
+      await pb.collection('books').update(bookId, body: {
+        'title': title,
+        'description': description,
+      });
+      await fetchBookDetails();
+    } catch (e) {
+      throw Exception('Failed to update book: $e');
     }
-    return null;
+  }
+
+  Future<void> saveChapterOrder() async {
+    try {
+      for (var i = 0; i < chapters.length; i++) {
+        await pb.collection('chapters').update(chapters[i].id, body: {
+          'order_number': i + 1,
+        });
+      }
+      await fetchChapters();
+    } catch (e) {
+      throw Exception('Failed to save chapter order: $e');
+    }
+  }
+
+  void updateChapterOrder(List<ChapterModel> newOrder) {
+    chapters.value = newOrder;
   }
 }

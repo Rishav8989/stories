@@ -22,6 +22,7 @@ class AppInitializer {
     
     // Initialize PocketBase instance
     final PocketBase pb = PocketBase(dotenv.get('POCKETBASE_URL'));
+    Get.put(pb, permanent: true);
 
     // Initialize ThemeController
     final ThemeController themeController = Get.put(ThemeController());

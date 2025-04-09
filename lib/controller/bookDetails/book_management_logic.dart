@@ -60,6 +60,7 @@ extension BookManagementLogic on BookDetailsController {
       Get.snackbar('Success', 'Book deleted!', backgroundColor: Colors.green);
     } catch (e) {
       print("Error deleting: $e");
+      Get.snackbar('Error', 'Failed to delete book', backgroundColor: Colors.red);
     }
   }
 }

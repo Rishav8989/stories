@@ -96,10 +96,11 @@ class BookDetailActionButtons extends StatelessWidget {
                         )),
                   if (!controller.hasDescription.value) const SizedBox(height: 16),
                   buildButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      final nextOrderNumber = await controller.getNextChapterOrderNumber();
                       Get.to(() => AddChapterPage(
                             bookId: controller.bookId,
-                            nextOrderNumber: controller.nextChapterOrderNumber,
+                            nextOrderNumber: nextOrderNumber,
                           ));
                     },
                     icon: Icons.add_circle_outline,
@@ -170,10 +171,11 @@ class BookDetailActionButtons extends StatelessWidget {
                       ? const SizedBox.shrink()
                       : const SizedBox(width: 16)),
                   buildButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      final nextOrderNumber = await controller.getNextChapterOrderNumber();
                       Get.to(() => AddChapterPage(
                             bookId: controller.bookId,
-                            nextOrderNumber: controller.nextChapterOrderNumber,
+                            nextOrderNumber: nextOrderNumber,
                           ));
                     },
                     icon: Icons.add_circle_outline,
