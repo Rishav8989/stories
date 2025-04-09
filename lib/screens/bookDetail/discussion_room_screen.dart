@@ -28,11 +28,13 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
   final ScrollController _scrollController = ScrollController();
   bool _isFirstTimeUser = true;
   String? _discussionRules;
+  late final BookDetailsController _bookController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
+    _bookController = Get.find<BookDetailsController>(tag: widget.bookId);
     _loadMessages();
     _loadDiscussionRules();
     _discussionService.subscribeToMessages(widget.bookId, _handleNewMessage);
@@ -126,7 +128,10 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discussion Room'),
+        title: Obx(() => Text(
+          _bookController.book.value?.title ?? 'Discussion Room',
+          style: theme.textTheme.titleLarge,
+        )),
       ),
       body: Container(
         decoration: BoxDecoration(
