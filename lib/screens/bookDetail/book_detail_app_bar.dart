@@ -41,6 +41,54 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   itemBuilder: (BuildContext context) => [
                     PopupMenuItem<String>(
+                      value: 'edit',
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.edit,
+                            color: colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Edit Book',
+                            style: TextStyle(
+                              letterSpacing: 0.5,
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'reorder',
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.reorder,
+                            color: colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Reorder Chapters',
+                            style: TextStyle(
+                              letterSpacing: 0.5,
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
                       value: 'delete',
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 12),
@@ -54,7 +102,7 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Delete',
+                            'Delete Book',
                             style: TextStyle(
                               letterSpacing: 0.5,
                               color: colorScheme.error,
@@ -133,6 +181,12 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                           );
                         }
                       }
+                    } else if (value == 'edit') {
+                      // TODO: Implement book editing
+                      Get.snackbar('Coming Soon', 'Book editing will be available soon!');
+                    } else if (value == 'reorder') {
+                      // TODO: Implement chapter reordering
+                      Get.snackbar('Coming Soon', 'Chapter reordering will be available soon!');
                     }
                   },
                 ),

@@ -5,11 +5,15 @@ import 'package:stories/controller/chapter_controller.dart';
 class ChapterContentPage extends StatelessWidget {
   final String chapterId;
   final String? chapterTitle;
+  final String? status;
+  final String bookId;
 
   const ChapterContentPage({
     Key? key,
     required this.chapterId,
+    required this.bookId,
     this.chapterTitle,
+    this.status,
   }) : super(key: key);
 
   @override
@@ -17,10 +21,47 @@ class ChapterContentPage extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final controller = Get.find<ChapterController>();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(chapterTitle?.toUpperCase() ?? 'CHAPTER'),
+        actions: [
+          if (status == 'draft')
+            IconButton(
+              icon: const Icon(Icons.publish),
+              tooltip: 'Publish Chapter',
+              onPressed: () async {
+                final confirm = await Get.dialog<bool>(
+                  AlertDialog(
+                    title: const Text('Publish Chapter'),
+                    content: const Text('Are you sure you want to publish this chapter?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Get.back(result: false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Get.back(result: true),
+                        child: const Text('Publish'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  controller.publishChapter(chapterId);
+                }
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Chapter',
+            onPressed: () {
+              // TODO: Implement edit chapter functionality
+              Get.snackbar('Coming Soon', 'Chapter editing will be available soon!');
+            },
+          ),
+        ],
       ),
       body: GetBuilder<ChapterController>(
         init: ChapterController(),

@@ -31,45 +31,113 @@ class BookDetailChapters extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'CHAPTERS',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface.withOpacity(0.6),
-              letterSpacing: 0.5,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'CHAPTERS',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (controller.book.value?.author == controller.userId)
+                IconButton(
+                  icon: const Icon(Icons.reorder),
+                  tooltip: 'Reorder Chapters',
+                  onPressed: () {
+                    // TODO: Implement chapter reordering
+                    Get.snackbar('Coming Soon', 'Chapter reordering will be available soon!');
+                  },
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: sortedChapters.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: colorScheme.outline.withOpacity(0.2),
+              ),
               itemBuilder: (context, index) {
                 final chapter = sortedChapters[index];
                 final orderNumber = chapter['order_number'] as int;
-                return ListTile(
-                  leading: Text(
-                    '$orderNumber.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.6),
-                      fontWeight: FontWeight.bold,
-                    ),
+                final status = chapter['status'] as String?;
+                return Container(
+                  decoration: BoxDecoration(
+                    color: status == 'draft' 
+                        ? colorScheme.primary.withOpacity(0.05)
+                        : null,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  title: Text(
-                    chapter['title'] ?? 'Untitled Chapter',
-                    style: textTheme.bodyMedium?.copyWith(
-                      letterSpacing: 0.5,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$orderNumber',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
+                    title: Text(
+                      chapter['title'] ?? 'Untitled Chapter',
+                      style: textTheme.bodyMedium?.copyWith(
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (status == 'draft')
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Draft',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.primary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      Get.to(() => ChapterContentPage(
+                            chapterId: chapter['id'],
+                            bookId: controller.bookId,
+                            chapterTitle: chapter['title'],
+                            status: status,
+                          ));
+                    },
                   ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Get.to(() => ChapterContentPage(
-                          chapterId: chapter['id'],
-                          chapterTitle: chapter['title'],
-                        ));
-                  },
                 );
               },
             ),

@@ -11,6 +11,17 @@ class ChapterController extends GetxController {
   
   ChapterController() : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
 
+  Future<bool> isBookOwner(String bookId) async {
+    try {
+      final userId = await _userService.getUserId();
+      final book = await _userService.pb.collection('books').getOne(bookId);
+      return book.data['author'] == userId;
+    } catch (e) {
+      print("Error checking book ownership: $e");
+      return false;
+    }
+  }
+
   Future<int> getNextOrderNumber(String bookId) async {
     try {
       final chapters = await _userService.pb
@@ -40,6 +51,11 @@ class ChapterController extends GetxController {
     required String content,
     String type = 'content',
   }) async {
+    if (!await isBookOwner(bookId)) {
+      Get.snackbar('Error', 'Only the book author can add chapters', backgroundColor: Colors.red);
+      return;
+    }
+
     isLoading.value = true;
     try {
       final orderNumber = await getNextOrderNumber(bookId);
@@ -67,6 +83,24 @@ class ChapterController extends GetxController {
     }
   }
 
+  Future<void> publishChapter(String chapterId) async {
+    try {
+      await _userService.pb.collection('chapters').update(chapterId, body: {
+        "status": "published",
+      });
+      
+      // Refresh the chapters list in the book details controller
+      final bookDetailsController = Get.find<BookDetailsController>();
+      await bookDetailsController.fetchChapters();
+      
+      Get.back(); // Return to previous screen
+      Get.snackbar('Success', 'Chapter published successfully!', backgroundColor: Colors.green);
+    } catch (e) {
+      print("Error publishing chapter: $e");
+      Get.snackbar('Error', 'Failed to publish chapter: $e', backgroundColor: Colors.red);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getChapters(String bookId) async {
     try {
       final records = await _userService.pb
@@ -78,6 +112,21 @@ class ChapterController extends GetxController {
       return records.items.map((record) => record.data).toList();
     } catch (e) {
       print("Error fetching chapters: $e");
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getPublishedChapters(String bookId) async {
+    try {
+      final records = await _userService.pb
+          .collection('chapters')
+          .getList(
+            filter: 'book = "$bookId" && status = "published"',
+            sort: 'order_number',
+          );
+      return records.items.map((record) => record.data).toList();
+    } catch (e) {
+      print("Error fetching published chapters: $e");
       return [];
     }
   }
