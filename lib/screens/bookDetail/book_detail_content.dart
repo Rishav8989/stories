@@ -8,6 +8,8 @@ import 'package:stories/screens/bookDetail/book_detail_action_buttons.dart';
 import 'package:stories/screens/bookDetail/book_detail_description.dart';
 import 'package:stories/screens/bookDetail/book_detail_info_card.dart';
 import 'package:stories/screens/bookDetail/book_detail_chapters.dart';
+import 'package:stories/screens/bookDetail/discussion_room_screen.dart';
+import 'package:stories/widgets/discussion_room.dart';
 
 class BookDetailContent extends StatelessWidget {
   // Make controller final as it shouldn't change after initialization
@@ -141,6 +143,61 @@ class BookDetailContent extends StatelessWidget {
                 if (currentBook.author == controller.userId)
                   BookDetailActionButtons(controller: controller),
                 const SizedBox(height: 24),
+                // Add Discussion Room
+                if (currentBook.status == 'published') ...[
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: InkWell(
+                      onTap: () {
+                        Get.to(() => DiscussionRoomScreen(
+                          bookId: currentBook.id,
+                          userId: controller.userId ?? '',
+                        ));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              color: colorScheme.primary,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Discussion Room',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Join the conversation with other readers',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: colorScheme.onSurfaceVariant,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Removed chat messages, keeping only the Discussion Room widget
+                ],
               ],
             ),
           ),

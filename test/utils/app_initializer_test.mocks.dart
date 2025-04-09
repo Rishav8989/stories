@@ -6,8 +6,8 @@
 import 'dart:async' as _i5;
 import 'dart:ui' as _i7;
 
-import 'package:flutter/material.dart' as _i2;
-import 'package:get/get.dart' as _i3;
+import 'package:flutter/material.dart' as _i3;
+import 'package:get/get.dart' as _i2;
 import 'package:get/get_state_manager/src/simple/list_notifier.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:stories/utils/theme/theme_controller.dart' as _i4;
@@ -26,18 +26,23 @@ import 'package:stories/utils/theme/theme_controller.dart' as _i4;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeThemeData_0 extends _i1.SmartFake implements _i2.ThemeData {
-  _FakeThemeData_0(Object parent, Invocation parentInvocation)
+class _FakeRx_0<T> extends _i1.SmartFake implements _i2.Rx<T> {
+  _FakeRx_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeThemeData_1 extends _i1.SmartFake implements _i3.ThemeData {
+  _FakeThemeData_1(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 
   @override
-  String toString({_i2.DiagnosticLevel? minLevel = _i2.DiagnosticLevel.info}) =>
+  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) =>
       super.toString();
 }
 
-class _FakeInternalFinalCallback_1<T> extends _i1.SmartFake
-    implements _i3.InternalFinalCallback<T> {
-  _FakeInternalFinalCallback_1(Object parent, Invocation parentInvocation)
+class _FakeInternalFinalCallback_2<T> extends _i1.SmartFake
+    implements _i2.InternalFinalCallback<T> {
+  _FakeInternalFinalCallback_2(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -46,64 +51,79 @@ class _FakeInternalFinalCallback_1<T> extends _i1.SmartFake
 /// See the documentation for Mockito's code generation for more information.
 class MockThemeController extends _i1.Mock implements _i4.ThemeController {
   @override
-  _i4.AppTheme get currentTheme =>
+  _i2.Rx<_i4.AppTheme> get currentTheme =>
       (super.noSuchMethod(
             Invocation.getter(#currentTheme),
-            returnValue: _i4.AppTheme.light,
-            returnValueForMissingStub: _i4.AppTheme.light,
+            returnValue: _FakeRx_0<_i4.AppTheme>(
+              this,
+              Invocation.getter(#currentTheme),
+            ),
+            returnValueForMissingStub: _FakeRx_0<_i4.AppTheme>(
+              this,
+              Invocation.getter(#currentTheme),
+            ),
+          )
+          as _i2.Rx<_i4.AppTheme>);
+
+  @override
+  _i4.AppTheme get selectedTheme =>
+      (super.noSuchMethod(
+            Invocation.getter(#selectedTheme),
+            returnValue: _i4.AppTheme.lightReading,
+            returnValueForMissingStub: _i4.AppTheme.lightReading,
           )
           as _i4.AppTheme);
 
   @override
-  _i2.ThemeMode get themeMode =>
+  _i3.ThemeMode get themeMode =>
       (super.noSuchMethod(
             Invocation.getter(#themeMode),
-            returnValue: _i2.ThemeMode.system,
-            returnValueForMissingStub: _i2.ThemeMode.system,
+            returnValue: _i3.ThemeMode.system,
+            returnValueForMissingStub: _i3.ThemeMode.system,
           )
-          as _i2.ThemeMode);
+          as _i3.ThemeMode);
 
   @override
-  _i2.ThemeData get themeData =>
+  _i3.ThemeData get themeData =>
       (super.noSuchMethod(
             Invocation.getter(#themeData),
-            returnValue: _FakeThemeData_0(this, Invocation.getter(#themeData)),
-            returnValueForMissingStub: _FakeThemeData_0(
+            returnValue: _FakeThemeData_1(this, Invocation.getter(#themeData)),
+            returnValueForMissingStub: _FakeThemeData_1(
               this,
               Invocation.getter(#themeData),
             ),
           )
-          as _i2.ThemeData);
+          as _i3.ThemeData);
 
   @override
-  _i3.InternalFinalCallback<void> get onStart =>
+  _i2.InternalFinalCallback<void> get onStart =>
       (super.noSuchMethod(
             Invocation.getter(#onStart),
-            returnValue: _FakeInternalFinalCallback_1<void>(
+            returnValue: _FakeInternalFinalCallback_2<void>(
               this,
               Invocation.getter(#onStart),
             ),
-            returnValueForMissingStub: _FakeInternalFinalCallback_1<void>(
+            returnValueForMissingStub: _FakeInternalFinalCallback_2<void>(
               this,
               Invocation.getter(#onStart),
             ),
           )
-          as _i3.InternalFinalCallback<void>);
+          as _i2.InternalFinalCallback<void>);
 
   @override
-  _i3.InternalFinalCallback<void> get onDelete =>
+  _i2.InternalFinalCallback<void> get onDelete =>
       (super.noSuchMethod(
             Invocation.getter(#onDelete),
-            returnValue: _FakeInternalFinalCallback_1<void>(
+            returnValue: _FakeInternalFinalCallback_2<void>(
               this,
               Invocation.getter(#onDelete),
             ),
-            returnValueForMissingStub: _FakeInternalFinalCallback_1<void>(
+            returnValueForMissingStub: _FakeInternalFinalCallback_2<void>(
               this,
               Invocation.getter(#onDelete),
             ),
           )
-          as _i3.InternalFinalCallback<void>);
+          as _i2.InternalFinalCallback<void>);
 
   @override
   bool get initialized =>
@@ -142,6 +162,12 @@ class MockThemeController extends _i1.Mock implements _i4.ThemeController {
           as int);
 
   @override
+  void onInit() => super.noSuchMethod(
+    Invocation.method(#onInit, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   _i5.Future<void> loadInitialTheme() =>
       (super.noSuchMethod(
             Invocation.method(#loadInitialTheme, []),
@@ -160,14 +186,44 @@ class MockThemeController extends _i1.Mock implements _i4.ThemeController {
           as _i5.Future<void>);
 
   @override
-  void switchToLightTheme() => super.noSuchMethod(
-    Invocation.method(#switchToLightTheme, []),
+  void switchToLightReadingTheme() => super.noSuchMethod(
+    Invocation.method(#switchToLightReadingTheme, []),
     returnValueForMissingStub: null,
   );
 
   @override
-  void switchToDarkTheme() => super.noSuchMethod(
-    Invocation.method(#switchToDarkTheme, []),
+  void switchToSepiaTheme() => super.noSuchMethod(
+    Invocation.method(#switchToSepiaTheme, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void switchToDarkReadingTheme() => super.noSuchMethod(
+    Invocation.method(#switchToDarkReadingTheme, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void switchToAmoledDarkTheme() => super.noSuchMethod(
+    Invocation.method(#switchToAmoledDarkTheme, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void switchToHighContrastTheme() => super.noSuchMethod(
+    Invocation.method(#switchToHighContrastTheme, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void switchToPaperWhiteTheme() => super.noSuchMethod(
+    Invocation.method(#switchToPaperWhiteTheme, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void switchToNightLightTheme() => super.noSuchMethod(
+    Invocation.method(#switchToNightLightTheme, []),
     returnValueForMissingStub: null,
   );
 
@@ -177,12 +233,6 @@ class MockThemeController extends _i1.Mock implements _i4.ThemeController {
         Invocation.method(#update, [ids, condition]),
         returnValueForMissingStub: null,
       );
-
-  @override
-  void onInit() => super.noSuchMethod(
-    Invocation.method(#onInit, []),
-    returnValueForMissingStub: null,
-  );
 
   @override
   void onReady() => super.noSuchMethod(
