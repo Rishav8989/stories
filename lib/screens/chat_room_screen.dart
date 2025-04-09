@@ -58,74 +58,89 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat Room'),
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isCurrentUser = message.senderId == widget.currentUserId;
+      body: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.background,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  final isCurrentUser = message.senderId == widget.currentUserId;
 
-                return ChatMessageBubble(
-                  message: message,
-                  isCurrentUser: isCurrentUser,
-                  onDelete: isCurrentUser ? () => _deleteMessage(message.id) : null,
-                );
-              },
+                  return ChatMessageBubble(
+                    message: message,
+                    isCurrentUser: isCurrentUser,
+                    onDelete: isCurrentUser ? () => _deleteMessage(message.id) : null,
+                  );
+                },
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Type a message...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                      ),
-                      textCapitalization: TextCapitalization.sentences,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      onSubmitted: (_) => _sendMessage(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _sendMessage,
-                    icon: const Icon(Icons.send),
-                    color: Theme.of(context).colorScheme.primary,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, -2),
                   ),
                 ],
               ),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: TextField(
+                          controller: _messageController,
+                          decoration: InputDecoration(
+                            hintText: 'Type a message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                          textCapitalization: TextCapitalization.sentences,
+                          keyboardType: TextInputType.multiline,
+                          maxLines: null,
+                          onSubmitted: (_) => _sendMessage(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        onPressed: _sendMessage,
+                        icon: const Icon(Icons.send),
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

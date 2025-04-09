@@ -13,9 +13,17 @@ class DiscussionService {
         perPage: 50,
         filter: 'book = "$bookId"',
         sort: '-created',
+        expand: 'user',
       );
       
-      return result.items.map((item) => DiscussionMessage.fromJson(item.toJson())).toList();
+      return result.items.map((item) {
+        final user = item.expand?['user'] as RecordModel?;
+        return DiscussionMessage.fromJson({
+          ...item.toJson(),
+          'user_name': user?.getStringValue('name') ?? 'Unknown User',
+          'user_avatar': user?.getStringValue('avatar'),
+        });
+      }).toList();
     } catch (e) {
       print('Error fetching messages: $e');
       return [];
@@ -31,7 +39,23 @@ class DiscussionService {
       };
 
       final record = await _pb.collection('discussion_room').create(body: data);
-      return DiscussionMessage.fromJson(record.toJson());
+      
+      // Try to get user info, but don't fail if user not found
+      String userName = 'Unknown User';
+      String? userAvatar;
+      try {
+        final user = await _pb.collection('users').getOne(userId);
+        userName = user.getStringValue('name') ?? 'Unknown User';
+        userAvatar = user.getStringValue('avatar');
+      } catch (e) {
+        print('Error fetching user info: $e');
+      }
+      
+      return DiscussionMessage.fromJson({
+        ...record.toJson(),
+        'user_name': userName,
+        'user_avatar': userAvatar,
+      });
     } catch (e) {
       print('Error sending message: $e');
       rethrow;
@@ -48,9 +72,23 @@ class DiscussionService {
   }
 
   void subscribeToMessages(String bookId, Function(DiscussionMessage) onNewMessage) {
-    _pb.collection('discussion_room').subscribe('*', (e) {
+    _pb.collection('discussion_room').subscribe('*', (e) async {
       if (e.action == 'create' && e.record?.getStringValue('book') == bookId) {
-        onNewMessage(DiscussionMessage.fromJson(e.record!.toJson()));
+        String userName = 'Unknown User';
+        String? userAvatar;
+        try {
+          final user = await _pb.collection('users').getOne(e.record!.getStringValue('user'));
+          userName = user.getStringValue('name') ?? 'Unknown User';
+          userAvatar = user.getStringValue('avatar');
+        } catch (e) {
+          print('Error fetching user info: $e');
+        }
+        
+        onNewMessage(DiscussionMessage.fromJson({
+          ...e.record!.toJson(),
+          'user_name': userName,
+          'user_avatar': userAvatar,
+        }));
       }
     }, filter: 'book = "$bookId"');
   }

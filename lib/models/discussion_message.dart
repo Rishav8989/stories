@@ -4,6 +4,8 @@ class DiscussionMessage {
   final String bookId;
   final String message;
   final DateTime createdAt;
+  final String userName;
+  final String? userAvatar;
 
   DiscussionMessage({
     required this.id,
@@ -11,6 +13,8 @@ class DiscussionMessage {
     required this.bookId,
     required this.message,
     required this.createdAt,
+    required this.userName,
+    this.userAvatar,
   });
 
   factory DiscussionMessage.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,8 @@ class DiscussionMessage {
       bookId: json['book'] as String,
       message: json['message'] as String,
       createdAt: DateTime.parse(json['created'] as String),
+      userName: json['user_name'] as String? ?? 'Unknown User',
+      userAvatar: json['user_avatar'] as String?,
     );
   }
 
@@ -28,6 +34,8 @@ class DiscussionMessage {
       'user': userId,
       'book': bookId,
       'message': message,
+      'user_name': userName,
+      'user_avatar': userAvatar,
     };
   }
 } 
