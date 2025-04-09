@@ -8,6 +8,9 @@ import 'package:stories/utils/user_service.dart';
 import 'package:stories/controller/chapter_controller.dart';
 import 'package:stories/controller/bookDetails/chapter_management_logic.dart';
 import 'package:stories/models/chapter_model.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BookDetailsController extends GetxController with ChapterManagementLogic {
   final UserService userService;
@@ -21,6 +24,11 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
   final Rx<String?> descriptionId = Rx<String?>(null);
   String? userId;
   String? errorMessage;
+
+  // Add reactive variables for edit page
+  final RxList<String> selectedGenres = <String>[].obs;
+  final RxString selectedType = ''.obs;
+  final Rx<File?> selectedImage = Rx<File?>(null);
 
   BookDetailsController({
     required this.userService,
@@ -113,15 +121,72 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
     return '${pb.baseUrl}/api/files/books/${book.value!.id}/${book.value!.bookCover}?thumb=100x100';
   }
 
-  Future<void> updateBook(String bookId, String title, String description) async {
+  Future<void> updateBook(
+    String bookId,
+    String title,
+    String description, {
+    List<String>? genres,
+    String? bookType,
+    File? coverImage,
+  }) async {
     try {
-      await pb.collection('books').update(bookId, body: {
+      final body = <String, dynamic>{
         'title': title,
         'description': description,
-      });
+      };
+
+      if (genres != null) {
+        body['genre'] = genres;
+      }
+
+      if (bookType != null) {
+        body['book_type'] = bookType;
+      }
+
+      if (coverImage != null) {
+        final bytes = await coverImage.readAsBytes();
+        final request = http.MultipartRequest(
+          'PATCH',
+          Uri.parse('${pb.baseUrl}/api/collections/books/records/$bookId'),
+        );
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'book_cover',
+            bytes,
+            filename: 'cover.jpg',
+          ),
+        );
+
+        request.fields.addAll(body.map((key, value) {
+          if (value is List) {
+            return MapEntry(key, jsonEncode(value));
+          }
+          return MapEntry(key, value.toString());
+        }));
+
+        request.headers['Authorization'] = pb.authStore.token ?? '';
+
+        final response = await request.send();
+        if (response.statusCode != 200) {
+          final errorBody = await response.stream.bytesToString();
+          throw Exception('Failed to upload image: ${response.statusCode} - $errorBody');
+        }
+      } else {
+        await pb.collection('books').update(bookId, body: body);
+      }
+
       await fetchBookDetails();
+      Get.snackbar('Success', 'Book updated successfully', backgroundColor: Colors.green);
     } catch (e) {
-      throw Exception('Failed to update book: $e');
+      print('Error updating book: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to update book: ${e.toString()}',
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
+      );
+      rethrow;
     }
   }
 

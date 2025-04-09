@@ -6,7 +6,7 @@ import 'package:stories/screens/bookDetail/book_detail_app_bar.dart';
 import 'package:stories/screens/bookDetail/book_detail_content.dart';
 import 'package:stories/utils/user_service.dart';
 
-class BookDetailsPage extends GetView<BookDetailsController> {
+class BookDetailsPage extends StatelessWidget {
   final String bookId;
 
   const BookDetailsPage({
@@ -16,12 +16,18 @@ class BookDetailsPage extends GetView<BookDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<BookDetailsController>(
-      init: BookDetailsController(
+    // Register the controller with a tag to ensure uniqueness
+    final controller = Get.put(
+      BookDetailsController(
         bookId: bookId,
         userService: Get.find<UserService>(),
         pb: Get.find<PocketBase>(),
       ),
+      tag: bookId,
+    );
+
+    return GetBuilder<BookDetailsController>(
+      tag: bookId,
       builder: (controller) {
         return Scaffold(
           appBar: BookDetailAppBar(controller: controller),

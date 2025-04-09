@@ -184,7 +184,16 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                         }
                       }
                     } else if (value == 'edit') {
-                      Get.to(() => EditBookPage(book: controller.book.value!));
+                      final book = controller.book.value;
+                      if (book != null) {
+                        Get.to(() => EditBookPage(book: book));
+                      } else {
+                        Get.snackbar(
+                          'Error',
+                          'Book data not available',
+                          backgroundColor: Colors.red,
+                        );
+                      }
                     } else if (value == 'reorder') {
                       Get.to(() => ReorderChaptersPage(controller: controller));
                     }
