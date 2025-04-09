@@ -1,0 +1,15 @@
+const Map<String, String> enUS = {
+  'about': 'About',
+  'about_app': 'About Stories App',
+  'about_description': 'Stories is a modern application that brings readers together through the power of storytelling. Our platform allows you to read, discuss, and share your thoughts about various stories with a community of book lovers.',
+  'features': 'Features',
+  'book_reading': 'Book Reading',
+  'discussion_rooms': 'Discussion Rooms',
+  'customizable_interface': 'Customizable Interface',
+  'multi_language': 'Multi-language Support',
+  'chapter_management': 'Chapter Management',
+  'real_time_chat': 'Real-time Chat',
+  'version': 'Version',
+  'contact': 'Contact Us',
+  'contact_email': 'support@storiesapp.com',
+}; 
