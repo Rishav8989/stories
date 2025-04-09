@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:stories/controller/font_controller.dart';
+import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 
 class AppInitializer {
   static Future<void> init() async {
@@ -38,9 +39,14 @@ class AppInitializer {
     Get.changeTheme(themeController.themeData);
     Get.changeThemeMode(themeController.themeMode);
 
-    // Initialize remaining services
+    // Initialize remaining services and controllers
     Get.put(UserService(pb));
     Get.put(AuthController(pb));
+    Get.lazyPut(() => BookDetailsController(
+      userService: Get.find<UserService>(),
+      pb: Get.find<PocketBase>(),
+      bookId: '', // This will be set when needed
+    ));
   }
 
   static Future<void> _requestPermissions() async {

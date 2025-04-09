@@ -19,13 +19,14 @@ mixin ChapterManagementLogic {
       await pb.collection('chapters').update(chapterId, body: {
         "title": title,
         "content": content,
+        "book": bookId,
       });
       await fetchChapters();
       Get.back();
       Get.snackbar('Success', 'Chapter updated!', backgroundColor: Colors.green);
     } catch (e) {
       print("Error updating chapter: $e");
-      Get.snackbar('Error', 'Failed to update chapter', backgroundColor: Colors.red);
+      Get.snackbar('Error', 'Failed to update chapter: $e', backgroundColor: Colors.red);
     }
   }
 
