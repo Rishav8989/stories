@@ -83,38 +83,31 @@ class ThemeController extends GetxController {
   }
 
   void switchToLightReadingTheme() {
-    currentTheme.value = AppTheme.lightReading;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.lightReading);
   }
 
   void switchToSepiaTheme() {
-    currentTheme.value = AppTheme.sepia;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.sepia);
   }
 
   void switchToDarkReadingTheme() {
-    currentTheme.value = AppTheme.darkReading;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.darkReading);
   }
 
   void switchToAmoledDarkTheme() {
-    currentTheme.value = AppTheme.amoledDark;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.amoledDark);
   }
 
   void switchToHighContrastTheme() {
-    currentTheme.value = AppTheme.highContrast;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.highContrast);
   }
 
   void switchToPaperWhiteTheme() {
-    currentTheme.value = AppTheme.paperWhite;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.paperWhite);
   }
 
   void switchToNightLightTheme() {
-    currentTheme.value = AppTheme.nightLight;
-    Get.forceAppUpdate();
+    setTheme(AppTheme.nightLight);
   }
 
   Future<void> _loadThemeFromPreferences() async {

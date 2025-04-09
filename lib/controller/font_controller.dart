@@ -19,10 +19,10 @@ class FontController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadFontFromPreferences();
+    loadFontFromPreferences();
   }
 
-  Future<void> _loadFontFromPreferences() async {
+  Future<void> loadFontFromPreferences() async {
     _prefs = await SharedPreferences.getInstance();
     final fontName = _prefs.getString(_fontKey);
     if (fontName != null) {
@@ -34,29 +34,30 @@ class FontController extends GetxController {
     await _prefs.setString(_fontKey, font);
   }
 
-  void switchToRoboto() {
-    selectedFont.value = 'Roboto';
-    _saveFontToPreferences('Roboto');
+  Future<void> setFont(String font) async {
+    selectedFont.value = font;
+    await _saveFontToPreferences(font);
+    Get.forceAppUpdate();
   }
 
-  void switchToOpenSans() {
-    selectedFont.value = 'Open Sans';
-    _saveFontToPreferences('Open Sans');
+  Future<void> switchToRoboto() async {
+    await setFont('Roboto');
   }
 
-  void switchToLato() {
-    selectedFont.value = 'Lato';
-    _saveFontToPreferences('Lato');
+  Future<void> switchToOpenSans() async {
+    await setFont('Open Sans');
   }
 
-  void switchToMerriweather() {
-    selectedFont.value = 'Merriweather';
-    _saveFontToPreferences('Merriweather');
+  Future<void> switchToLato() async {
+    await setFont('Lato');
   }
 
-  void switchToNotoSans() {
-    selectedFont.value = 'Noto Sans';
-    _saveFontToPreferences('Noto Sans');
+  Future<void> switchToMerriweather() async {
+    await setFont('Merriweather');
+  }
+
+  Future<void> switchToNotoSans() async {
+    await setFont('Noto Sans');
   }
 
   TextStyle getTextStyle(TextStyle baseStyle) {

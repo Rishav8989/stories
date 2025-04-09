@@ -86,7 +86,9 @@ class FontSelectorPage extends StatelessWidget {
               ),
         ),
         subtitle: Text(subtitle),
-        onTap: onTap,
+        onTap: () async {
+          await onTap();
+        },
       ),
     );
   }

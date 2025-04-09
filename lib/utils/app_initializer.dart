@@ -24,21 +24,22 @@ class AppInitializer {
     final PocketBase pb = PocketBase(dotenv.get('POCKETBASE_URL'));
     Get.put(pb, permanent: true);
 
-    // Initialize ThemeController
-    final ThemeController themeController = Get.put(ThemeController());
-    await themeController.loadInitialTheme();
+    // Initialize controllers
+    final themeController = Get.put(ThemeController());
+    final fontController = Get.put(FontController());
     
+    // Wait for both theme and font to load
+    await Future.wait([
+      themeController.loadInitialTheme(),
+      fontController.loadFontFromPreferences(),
+    ]);
+
     // Force initial theme update
     Get.changeTheme(themeController.themeData);
     Get.changeThemeMode(themeController.themeMode);
 
-    // Initialize FontController
-    Get.put(FontController());
-
-    // Initialize UserService with pb instance
+    // Initialize remaining services
     Get.put(UserService(pb));
-
-    // Initialize AuthController with pb instance
     Get.put(AuthController(pb));
   }
 
