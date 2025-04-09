@@ -20,38 +20,73 @@ class FontSelectorPage extends StatelessWidget {
           children: [
             _buildFontListTile(
               context,
-              'Roboto',
-              'Default system font',
-              fontController.switchToRoboto,
-              fontController.selectedFont.value == 'Roboto',
-            ),
-            _buildFontListTile(
-              context,
-              'Open Sans',
-              'Clean and modern',
-              fontController.switchToOpenSans,
-              fontController.selectedFont.value == 'Open Sans',
-            ),
-            _buildFontListTile(
-              context,
-              'Lato',
-              'Professional and elegant',
-              fontController.switchToLato,
-              fontController.selectedFont.value == 'Lato',
-            ),
-            _buildFontListTile(
-              context,
               'Merriweather',
-              'Classic serif font',
+              'Classic serif for comfortable reading',
               fontController.switchToMerriweather,
               fontController.selectedFont.value == 'Merriweather',
             ),
             _buildFontListTile(
               context,
-              'Noto Sans',
-              'Great for multiple languages',
-              fontController.switchToNotoSans,
-              fontController.selectedFont.value == 'Noto Sans',
+              'Dancing Script',
+              'Elegant handwritten style',
+              fontController.switchToDancingScript,
+              fontController.selectedFont.value == 'Dancing Script',
+            ),
+            _buildFontListTile(
+              context,
+              'Pacifico',
+              'Casual handwritten style',
+              fontController.switchToPacifico,
+              fontController.selectedFont.value == 'Pacifico',
+            ),
+            _buildFontListTile(
+              context,
+              'Caveat',
+              'Natural handwriting style',
+              fontController.switchToCaveat,
+              fontController.selectedFont.value == 'Caveat',
+            ),
+            _buildFontListTile(
+              context,
+              'Roboto Mono',
+              'Clean monospace for technical content',
+              fontController.switchToRobotoMono,
+              fontController.selectedFont.value == 'Roboto Mono',
+            ),
+            _buildFontListTile(
+              context,
+              'Source Code Pro',
+              'Professional monospace font',
+              fontController.switchToSourceCodePro,
+              fontController.selectedFont.value == 'Source Code Pro',
+            ),
+            _buildFontListTile(
+              context,
+              'Playfair Display',
+              'Elegant serif for headings',
+              fontController.switchToPlayfairDisplay,
+              fontController.selectedFont.value == 'Playfair Display',
+            ),
+            _buildFontListTile(
+              context,
+              'Cormorant',
+              'Stylish serif with character',
+              fontController.switchToCormorant,
+              fontController.selectedFont.value == 'Cormorant',
+            ),
+            _buildFontListTile(
+              context,
+              'Alegreya',
+              'Elegant serif with personality',
+              fontController.switchToAlegreya,
+              fontController.selectedFont.value == 'Alegreya',
+            ),
+            _buildFontListTile(
+              context,
+              'Lora',
+              'Classic serif with modern touch',
+              fontController.switchToLora,
+              fontController.selectedFont.value == 'Lora',
             ),
           ],
         ),
@@ -66,30 +101,42 @@ class FontSelectorPage extends StatelessWidget {
     Function() onTap,
     bool isSelected,
   ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 12.0,
-        ),
-        leading: Icon(
-          isSelected ? Icons.check_circle : Icons.font_download,
-          color: isSelected ? Theme.of(context).colorScheme.primary : null,
-        ),
-        title: Text(
-          title,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontFamily: title,
+    final fontController = Get.find<FontController>();
+    
+    return Obx(() {
+      final isLoading = fontController.isLoading.value && isSelected;
+      
+      return Card(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        elevation: 2.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 12.0,
+          ),
+          leading: isLoading 
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(
+                isSelected ? Icons.check_circle : Icons.font_download,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
               ),
+          title: Text(
+            title,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontFamily: title,
+            ),
+          ),
+          subtitle: Text(subtitle),
+          onTap: isLoading ? null : () async {
+            await onTap();
+          },
         ),
-        subtitle: Text(subtitle),
-        onTap: () async {
-          await onTap();
-        },
-      ),
-    );
+      );
+    });
   }
 } 

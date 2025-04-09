@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FontController extends GetxController {
-  final RxString selectedFont = 'Roboto'.obs;
+  final RxString selectedFont = 'Merriweather'.obs;
+  final RxBool isLoading = false.obs;
   final List<String> _availableFonts = [
-    'Roboto',
-    'Open Sans',
-    'Lato',
-    'Merriweather',
-    'Noto Sans'
+    'Merriweather',       // Classic serif for comfortable reading
+    'Dancing Script',     // Handwritten style
+    'Pacifico',           // Casual handwritten
+    'Caveat',            // Natural handwriting
+    'Roboto Mono',       // Monospace for code/technical content
+    'Source Code Pro',   // Professional monospace
+    'Playfair Display',  // Elegant serif for headings
+    'Cormorant',         // Stylish serif
+    'Alegreya',          // Elegant serif with personality
+    'Lora',              // Classic serif with modern touch
   ];
   late SharedPreferences _prefs;
   final String _fontKey = 'app_font';
@@ -35,34 +42,32 @@ class FontController extends GetxController {
   }
 
   Future<void> setFont(String font) async {
-    selectedFont.value = font;
-    await _saveFontToPreferences(font);
-    Get.forceAppUpdate();
+    try {
+      isLoading.value = true;
+      selectedFont.value = font;
+      await _saveFontToPreferences(font);
+      await Future.delayed(const Duration(milliseconds: 300)); // Add small delay for smooth transition
+      Get.forceAppUpdate();
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  Future<void> switchToRoboto() async {
-    await setFont('Roboto');
-  }
-
-  Future<void> switchToOpenSans() async {
-    await setFont('Open Sans');
-  }
-
-  Future<void> switchToLato() async {
-    await setFont('Lato');
-  }
-
-  Future<void> switchToMerriweather() async {
-    await setFont('Merriweather');
-  }
-
-  Future<void> switchToNotoSans() async {
-    await setFont('Noto Sans');
-  }
+  Future<void> switchToMerriweather() async => await setFont('Merriweather');
+  Future<void> switchToDancingScript() async => await setFont('Dancing Script');
+  Future<void> switchToPacifico() async => await setFont('Pacifico');
+  Future<void> switchToCaveat() async => await setFont('Caveat');
+  Future<void> switchToRobotoMono() async => await setFont('Roboto Mono');
+  Future<void> switchToSourceCodePro() async => await setFont('Source Code Pro');
+  Future<void> switchToPlayfairDisplay() async => await setFont('Playfair Display');
+  Future<void> switchToCormorant() async => await setFont('Cormorant');
+  Future<void> switchToAlegreya() async => await setFont('Alegreya');
+  Future<void> switchToLora() async => await setFont('Lora');
 
   TextStyle getTextStyle(TextStyle baseStyle) {
-    return baseStyle.copyWith(
-      fontFamily: selectedFont.value,
+    return GoogleFonts.getFont(
+      selectedFont.value,
+      textStyle: baseStyle,
     );
   }
 } 

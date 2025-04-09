@@ -5,6 +5,7 @@ import 'package:stories/utils/app_initializer.dart';
 import 'package:stories/utils/theme/app_theme.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/controller/font_controller.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,20 +31,24 @@ class MyApp extends StatelessWidget {
         locale: Get.deviceLocale,
         fallbackLocale: const Locale('en', 'US'),
         theme: currentTheme.copyWith(
-          textTheme: currentTheme.textTheme.apply(
-            fontFamily: currentFont,
+          textTheme: GoogleFonts.getTextTheme(
+            currentFont,
+            currentTheme.textTheme,
           ),
           appBarTheme: currentTheme.appBarTheme.copyWith(
-            titleTextStyle: currentTheme.appBarTheme.titleTextStyle?.copyWith(
-              fontFamily: currentFont,
+            titleTextStyle: GoogleFonts.getFont(
+              currentFont,
+              textStyle: currentTheme.appBarTheme.titleTextStyle,
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              textStyle: TextStyle(
-                fontFamily: currentFont,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+              textStyle: GoogleFonts.getFont(
+                currentFont,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
               ),
             ),
           ),
