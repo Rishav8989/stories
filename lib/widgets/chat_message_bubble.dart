@@ -6,6 +6,7 @@ class ChatMessageBubble extends StatefulWidget {
   final bool isCurrentUser;
   final VoidCallback? onDelete;
   final String? senderAvatarUrl;
+  final String? formattedTime;
 
   const ChatMessageBubble({
     Key? key,
@@ -13,6 +14,7 @@ class ChatMessageBubble extends StatefulWidget {
     required this.isCurrentUser,
     this.onDelete,
     this.senderAvatarUrl,
+    this.formattedTime,
   }) : super(key: key);
 
   @override
@@ -129,7 +131,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _formatTime(widget.message.timestamp),
+                          widget.formattedTime ?? _formatTime(widget.message.timestamp),
                           style: TextStyle(
                             color: widget.isCurrentUser ? Colors.white70 : Colors.black54,
                             fontSize: 12,

@@ -28,6 +28,7 @@ dependencies:
   permission_handler: ^11.4.0
   pocketbase: ^0.22.0
   shared_preferences: ^2.5.2
+  timezone: ^0.10.0
 
 dev_dependencies:
   flutter_test:

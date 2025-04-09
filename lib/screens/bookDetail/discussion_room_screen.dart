@@ -5,6 +5,9 @@ import 'package:stories/models/chat_message.dart';
 import 'package:stories/models/discussion_message.dart';
 import 'package:stories/services/discussion_service.dart';
 import 'package:stories/widgets/chat_message_bubble.dart';
+import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class DiscussionRoomScreen extends StatefulWidget {
   final String bookId;
@@ -29,10 +32,15 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
   bool _isFirstTimeUser = true;
   String? _discussionRules;
   late final BookDetailsController _bookController;
+  final DateFormat _timeFormat = DateFormat('h:mm a');
+  final DateFormat _dateFormat = DateFormat('MMM d, yyyy');
+  late final tz.Location _localLocation;
 
   @override
   void initState() {
     super.initState();
+    tz.initializeTimeZones();
+    _localLocation = tz.local;
     _tabController = TabController(length: 1, vsync: this);
     _bookController = Get.find<BookDetailsController>(tag: widget.bookId);
     _loadMessages();
@@ -121,6 +129,37 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
     }
   }
 
+  DateTime _convertToLocalTime(DateTime utcTime) {
+    // Ensure the input time is treated as UTC
+    final utcDateTime = DateTime.utc(
+      utcTime.year,
+      utcTime.month,
+      utcTime.day,
+      utcTime.hour,
+      utcTime.minute,
+      utcTime.second,
+      utcTime.millisecond,
+      utcTime.microsecond,
+    );
+    // Convert to local time
+    return utcDateTime.toLocal();
+  }
+
+  String _formatMessageTime(DateTime utcTime) {
+    final localTime = _convertToLocalTime(utcTime);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(localTime.year, localTime.month, localTime.day);
+
+    if (messageDate == today) {
+      return _timeFormat.format(localTime);
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      return 'Yesterday ${_timeFormat.format(localTime)}';
+    } else {
+      return '${_dateFormat.format(localTime)} ${_timeFormat.format(localTime)}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -202,6 +241,7 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
                           isCurrentUser: isMe,
                           onDelete: isMe ? () => _deleteMessage(message.id) : null,
                           senderAvatarUrl: message.userAvatar,
+                          formattedTime: _formatMessageTime(message.createdAt),
                         );
                       },
                     ),
