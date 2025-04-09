@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/utils/translation/locale_controller.dart';
-import 'package:stories/utils/translation/translation_service.dart';
+import 'package:stories/utils/translations/locale_controller.dart';
+import 'package:stories/utils/translations/translation_service.dart';
 
 class LanguageSelectionPage extends StatelessWidget {
   const LanguageSelectionPage({super.key});

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stories/utils/translation/translation_service.dart';
+import 'package:stories/utils/translations/translation_service.dart';
 
 class LocaleController extends GetxController {
   // Correct: Access fallbackLocale statically using the class name.
