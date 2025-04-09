@@ -25,6 +25,10 @@ class AppInitializer {
     // Initialize ThemeController
     final ThemeController themeController = Get.put(ThemeController());
     await themeController.loadInitialTheme();
+    
+    // Force initial theme update
+    Get.changeTheme(themeController.themeData);
+    Get.changeThemeMode(themeController.themeMode);
 
     // Initialize UserService with pb instance
     Get.put(UserService(pb));

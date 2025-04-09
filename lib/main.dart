@@ -21,38 +21,20 @@ class MyApp extends StatelessWidget {
     final themeController = Get.find<ThemeController>();
     
     return Obx(() {
-      final currentFont = fontController.selectedFont;
+      final currentFont = fontController.selectedFont.value;
+      final currentTheme = themeController.themeData;
       
       return GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Stories App',
         locale: Get.deviceLocale,
         fallbackLocale: const Locale('en', 'US'),
-        theme: lightTheme.copyWith(
-          textTheme: lightTheme.textTheme.apply(
+        theme: currentTheme.copyWith(
+          textTheme: currentTheme.textTheme.apply(
             fontFamily: currentFont,
           ),
-          appBarTheme: lightTheme.appBarTheme.copyWith(
-            titleTextStyle: lightTheme.appBarTheme.titleTextStyle?.copyWith(
-              fontFamily: currentFont,
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              textStyle: TextStyle(
-                fontFamily: currentFont,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-          ),
-        ),
-        darkTheme: darkTheme.copyWith(
-          textTheme: darkTheme.textTheme.apply(
-            fontFamily: currentFont,
-          ),
-          appBarTheme: darkTheme.appBarTheme.copyWith(
-            titleTextStyle: darkTheme.appBarTheme.titleTextStyle?.copyWith(
+          appBarTheme: currentTheme.appBarTheme.copyWith(
+            titleTextStyle: currentTheme.appBarTheme.titleTextStyle?.copyWith(
               fontFamily: currentFont,
             ),
           ),

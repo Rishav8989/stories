@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/controller/font_controller.dart';
-import 'package:stories/utils/theme/theme_selector.dart';
+import 'package:stories/screens/home screen/theme_selector_page.dart';
 import 'package:stories/utils/translation/language_selector.dart';
 import 'package:stories/utils/translation/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
 import 'package:stories/widgets/logout_button.dart';
 import 'package:stories/widgets/view_profile_widget.dart';
 import 'package:stories/widgets/font_selector.dart';
+import 'package:stories/screens/home screen/font_selector_page.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -55,8 +56,32 @@ class AccountPage extends StatelessWidget {
                 text: 'Select Language'.tr,
                 onTap: () => Get.to(() => const LanguageSelectionPage()),
               ),
-              ThemeSelectorWidget(themeController: themeController),
-              FontSelector(fontController: fontController),
+              _buildListTile(
+                context: context,
+                icon: Icons.palette,
+                text: 'Theme'.tr,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ThemeSelectorPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildListTile(
+                context: context,
+                icon: Icons.font_download,
+                text: 'Font'.tr,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FontSelectorPage(),
+                    ),
+                  );
+                },
+              ),
               _buildListTile(
                 context: context,
                 icon: Icons.info,
@@ -131,7 +156,7 @@ class AccountPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     'Logout'.tr,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),

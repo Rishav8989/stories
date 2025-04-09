@@ -27,7 +27,7 @@ class FontSelector extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         subtitle: Obx(() => Text(
-          fontController.selectedFont,
+          fontController.selectedFont.value,
           style: Theme.of(context).textTheme.bodyMedium,
         )),
         onTap: () => _showFontSelectionDialog(context),
@@ -56,7 +56,7 @@ class FontSelector extends StatelessWidget {
                   ),
                 ),
                 onTap: () {
-                  fontController.changeFont(font);
+                  fontController.selectedFont.value = font;
                   Navigator.pop(context);
                 },
               );
