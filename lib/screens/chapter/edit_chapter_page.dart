@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
+import 'package:stories/utils/reading_time_calculator.dart';
 
 class EditChapterPage extends StatefulWidget {
   final String chapterId;
@@ -21,13 +22,14 @@ class EditChapterPage extends StatefulWidget {
 }
 
 class _EditChapterPageState extends State<EditChapterPage> {
-  late final TextEditingController titleController;
-  late final TextEditingController contentController;
   final formKey = GlobalKey<FormState>();
+  late TextEditingController titleController;
+  late TextEditingController contentController;
   final RxInt wordCount = 0.obs;
   final RxInt lineCount = 0.obs;
-  final RxBool isDarkMode = false.obs;
   final RxDouble fontSize = 16.0.obs;
+  final RxBool _hasUnsavedChanges = false.obs;
+  late BookDetailsController bookDetailsController;
 
   @override
   void initState() {
@@ -36,8 +38,24 @@ class _EditChapterPageState extends State<EditChapterPage> {
     contentController = TextEditingController(text: widget.initialContent);
     _updateCounts(widget.initialContent);
     
-    // Listen to content changes
+    // Initialize BookDetailsController with the correct bookId
+    bookDetailsController = Get.put(
+      BookDetailsController(
+        userService: Get.find(),
+        pb: Get.find(),
+        bookId: widget.bookId,
+      ),
+      tag: 'edit_chapter_${widget.chapterId}',
+      permanent: false,
+    );
+
+    // Add listeners for detecting changes
+    titleController.addListener(() {
+      _onContentChanged();
+      _updateCounts(contentController.text);
+    });
     contentController.addListener(() {
+      _onContentChanged();
       _updateCounts(contentController.text);
     });
   }
@@ -50,244 +68,177 @@ class _EditChapterPageState extends State<EditChapterPage> {
     lineCount.value = text.trim().split('\n').length;
   }
 
+  void _onContentChanged() {
+    _hasUnsavedChanges.value = true;
+  }
+
   @override
   void dispose() {
     titleController.dispose();
     contentController.dispose();
+    Get.delete<BookDetailsController>(tag: 'edit_chapter_${widget.chapterId}');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controller with the correct bookId if not already initialized
-    if (!Get.isRegistered<BookDetailsController>()) {
-      Get.put(BookDetailsController(
-        userService: Get.find(),
-        pb: Get.find(),
-        bookId: widget.bookId,
-      ));
-    } else {
-      final controller = Get.find<BookDetailsController>();
-      if (controller.bookId != widget.bookId) {
-        // If bookId is different, replace the controller
-        Get.replace(BookDetailsController(
-          userService: Get.find(),
-          pb: Get.find(),
-          bookId: widget.bookId,
-        ));
-      }
-    }
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final controller = Get.find<BookDetailsController>();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Obx(() => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              controller.book.value?.title ?? 'Loading...',
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              'Edit Chapter',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        )),
-        centerTitle: true,
-        actions: [
-          // Writing mode toggle
-          Obx(() => IconButton(
-            icon: Icon(isDarkMode.value ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => isDarkMode.value = !isDarkMode.value,
-            tooltip: 'Toggle Writing Mode',
-          )),
-          // Font size adjustment
-          IconButton(
-            icon: const Icon(Icons.text_fields),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Adjust Font Size'),
-                  content: Obx(() => Slider(
-                    value: fontSize.value,
-                    min: 12,
-                    max: 24,
-                    divisions: 12,
-                    label: fontSize.value.toStringAsFixed(1),
-                    onChanged: (value) => fontSize.value = value,
-                  )),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Get.back(),
-                      child: const Text('Close'),
-                    ),
-                  ],
+    return WillPopScope(
+      onWillPop: () async {
+        if (_hasUnsavedChanges.value) {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Unsaved Changes'),
+              content: const Text('Do you want to save your changes?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Discard'),
                 ),
-              );
-            },
-            tooltip: 'Adjust Font Size',
-          ),
-        ],
-      ),
-      body: Obx(() => Container(
-        color: isDarkMode.value 
-          ? const Color(0xFF1A1A1A)  // Dark writing mode background
-          : Theme.of(context).scaffoldBackgroundColor,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: titleController,
-                  enabled: !controller.isLoading.value,
-                  style: TextStyle(
-                    color: isDarkMode.value ? Colors.white : null,
-                    fontSize: fontSize.value,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Chapter Title',
-                    border: const OutlineInputBorder(),
-                    labelStyle: TextStyle(
-                      color: isDarkMode.value ? Colors.white70 : null,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: isDarkMode.value ? Colors.white30 : Colors.grey,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a chapter title';
+                TextButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() ?? false) {
+                      try {
+                        await bookDetailsController.updateChapter(
+                          chapterId: widget.chapterId,
+                          title: titleController.text.trim(),
+                          content: contentController.text.trim(),
+                        );
+                        if (context.mounted) {
+                          Navigator.of(context).pop(true);
+                        }
+                      } catch (e) {
+                        Get.snackbar(
+                          'Error',
+                          'Failed to save chapter: ${e.toString()}',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red.withOpacity(0.8),
+                          colorText: Colors.white,
+                          duration: const Duration(seconds: 5),
+                        );
+                      }
                     }
-                    return null;
                   },
-                ),
-                const SizedBox(height: 16),
-                // Stats display
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.format_list_numbered, 
-                        size: 16, 
-                        color: (isDarkMode.value ? Colors.white60 : Theme.of(context).textTheme.bodySmall?.color)
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${lineCount.value} lines',
-                        style: TextStyle(
-                          color: isDarkMode.value ? Colors.white60 : null,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.text_fields,
-                        size: 16,
-                        color: (isDarkMode.value ? Colors.white60 : Theme.of(context).textTheme.bodySmall?.color)
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${wordCount.value} words',
-                        style: TextStyle(
-                          color: isDarkMode.value ? Colors.white60 : null,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.access_time,
-                        size: 16,
-                        color: (isDarkMode.value ? Colors.white60 : Theme.of(context).textTheme.bodySmall?.color)
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '~${(wordCount.value / 200).ceil()} min read',
-                        style: TextStyle(
-                          color: isDarkMode.value ? Colors.white60 : null,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextFormField(
-                  controller: contentController,
-                  enabled: !controller.isLoading.value,
-                  maxLines: null,
-                  minLines: 10,
-                  style: TextStyle(
-                    color: isDarkMode.value ? Colors.white : null,
-                    fontSize: fontSize.value,
-                    height: 1.5,  // Line height for better readability
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Chapter Content',
-                    border: const OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                    labelStyle: TextStyle(
-                      color: isDarkMode.value ? Colors.white70 : null,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: isDarkMode.value ? Colors.white30 : Colors.grey,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter chapter content';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      backgroundColor: isDarkMode.value ? Colors.white24 : null,
-                    ),
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () async {
-                            if (formKey.currentState!.validate()) {
-                              try {
-                                await controller.updateChapter(
-                                  chapterId: widget.chapterId,
-                                  title: titleController.text.trim(),
-                                  content: contentController.text.trim(),
-                                );
-                              } catch (e) {
-                                // Error is already handled in the controller
-                              }
-                            }
-                          },
-                    child: controller.isLoading.value
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Save Changes'),
-                  ),
+                  child: const Text('Save'),
                 ),
               ],
             ),
-          ),
+          );
+          return result ?? false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Chapter'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  try {
+                    await bookDetailsController.updateChapter(
+                      chapterId: widget.chapterId,
+                      title: titleController.text.trim(),
+                      content: contentController.text.trim(),
+                    );
+                    _hasUnsavedChanges.value = false;
+                    Get.back(result: true);
+                  } catch (e) {
+                    Get.snackbar(
+                      'Error',
+                      'Failed to save chapter: ${e.toString()}',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red.withOpacity(0.8),
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 5),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
-      )),
+        body: Obx(() => Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Chapter Title',
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: titleController,
+                    style: TextStyle(
+                      fontSize: fontSize.value + 4,
+                      color: textTheme.bodyLarge?.color,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Enter chapter title',
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Please enter a title' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Word count: ${wordCount.value} | Lines: ${lineCount.value} | ${ReadingTimeCalculator.calculateReadingTime(contentController.text)}',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chapter Content',
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: contentController,
+                    style: TextStyle(
+                      fontSize: fontSize.value,
+                      color: textTheme.bodyLarge?.color,
+                      height: 1.5,
+                    ),
+                    maxLines: null,
+                    minLines: 15,
+                    decoration: InputDecoration(
+                      hintText: 'Enter chapter content',
+                      border: const OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                    ),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Please enter content' : null,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        )),
+      ),
     );
   }
 } 

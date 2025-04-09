@@ -40,9 +40,11 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
   void onInit() {
     super.onInit();
     _initializeUserId();
-    fetchBookDetails();
-    fetchDescription();
-    fetchChapters();
+    if (bookId.isNotEmpty) {
+      fetchBookDetails();
+      fetchDescription();
+      fetchChapters();
+    }
   }
 
   Future<void> _initializeUserId() async {
@@ -205,5 +207,34 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
 
   void updateChapterOrder(List<ChapterModel> newOrder) {
     chapters.value = newOrder;
+  }
+
+  Future<void> updateChapter({
+    required String chapterId,
+    required String title,
+    required String content,
+  }) async {
+    try {
+      print('Updating chapter with bookId: $bookId'); // Debug log
+      if (bookId.isEmpty) {
+        throw Exception('BookId is empty. Please ensure the controller is properly initialized.');
+      }
+      
+      final response = await pb.collection('chapters').update(
+        chapterId,
+        body: {
+          'title': title,
+          'content': content,
+          'book': bookId,
+          'type': 'content',
+          'status': 'draft', // Ensure status is set
+        },
+      );
+      print('Update response: $response'); // Debug log
+      await fetchChapters();
+    } catch (e) {
+      print('Error updating chapter: $e');
+      throw e;
+    }
   }
 }

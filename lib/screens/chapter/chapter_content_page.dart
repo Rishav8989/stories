@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/chapter_controller.dart';
 import 'package:stories/screens/chapter/edit_chapter_page.dart';
+import 'package:stories/utils/reading_time_calculator.dart';
 
 class ChapterContentPage extends StatelessWidget {
   final String chapterId;
@@ -24,6 +25,11 @@ class ChapterContentPage extends StatelessWidget {
     final textTheme = theme.textTheme;
     final controller = Get.put(ChapterController());
 
+    // Load initial content
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.getChapterContent(chapterId);
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text(chapterTitle),
@@ -33,72 +39,105 @@ class ChapterContentPage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.publish),
               onPressed: () => controller.publishChapter(chapterId),
-              tooltip: 'Publish Chapter',
+              tooltip: 'Publish this chapter to make it visible to readers',
             ),
           IconButton(
             icon: const Icon(Icons.edit),
-            tooltip: 'Edit Chapter',
+            tooltip: 'Edit chapter title and content',
             onPressed: () async {
-              final chapterContent = await controller.getChapterContent(chapterId);
-              if (chapterContent != null) {
-                Get.to(() => EditChapterPage(
-                      chapterId: chapterId,
-                      bookId: bookId,
-                      initialTitle: chapterContent['title'] ?? '',
-                      initialContent: chapterContent['content'] ?? '',
-                    ));
+              try {
+                final chapterContent = await controller.getChapterContent(chapterId);
+                if (chapterContent != null) {
+                  final result = await Get.to(() => EditChapterPage(
+                    chapterId: chapterId,
+                    bookId: bookId,
+                    initialTitle: chapterContent['title'] ?? '',
+                    initialContent: chapterContent['content'] ?? '',
+                  ));
+                  
+                  // Refresh content if save was successful
+                  if (result == true) {
+                    await controller.getChapterContent(chapterId);
+                  }
+                }
+              } catch (e) {
+                Get.snackbar(
+                  'Error',
+                  'Failed to load chapter content: $e',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red,
+                );
               }
             },
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: controller.getChapterContent(chapterId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Obx(() {
+        final content = controller.currentContent.value;
+        if (content.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading chapter: ${snapshot.error}',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.error,
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                ReadingTimeCalculator.calculateReadingTime(content),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            );
-          }
-
-          final content = snapshot.data?['content'] as String? ?? '';
-          final paragraphs = content.split('\n\n');
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    for (final paragraph in paragraphs)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          paragraph,
-                          style: textTheme.bodyLarge?.copyWith(
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () async {
+                      final prevChapter = await controller.getPreviousChapter(bookId, controller.currentChapterOrder.value);
+                      if (prevChapter != null) {
+                        Get.off(() => ChapterContentPage(
+                          chapterId: prevChapter['id'],
+                          bookId: bookId,
+                          chapterTitle: prevChapter['title'],
+                          status: prevChapter['status'],
+                        ));
+                      }
+                    },
+                    tooltip: 'Previous Chapter',
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        content,
+                        style: textTheme.bodyLarge,
+                        textAlign: TextAlign.center,
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: () async {
+                      final nextChapter = await controller.getNextChapter(bookId, controller.currentChapterOrder.value);
+                      if (nextChapter != null) {
+                        Get.off(() => ChapterContentPage(
+                          chapterId: nextChapter['id'],
+                          bookId: bookId,
+                          chapterTitle: nextChapter['title'],
+                          status: nextChapter['status'],
+                        ));
+                      }
+                    },
+                    tooltip: 'Next Chapter',
+                  ),
+                ],
               ),
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        );
+      }),
     );
   }
 } 

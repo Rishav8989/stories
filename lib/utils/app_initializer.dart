@@ -42,11 +42,11 @@ class AppInitializer {
     // Initialize remaining services and controllers
     Get.put(UserService(pb));
     Get.put(AuthController(pb));
-    Get.lazyPut(() => BookDetailsController(
+    Get.lazyPut<BookDetailsController>(() => BookDetailsController(
       userService: Get.find<UserService>(),
       pb: Get.find<PocketBase>(),
       bookId: '', // This will be set when needed
-    ));
+    ), fenix: true);
   }
 
   static Future<void> _requestPermissions() async {
