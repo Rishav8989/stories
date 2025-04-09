@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/controller/book_details_page_controller.dart';
+import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
+import 'package:stories/controller/bookDetails/book_management_logic.dart';
 
 class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final BookDetailsController controller;

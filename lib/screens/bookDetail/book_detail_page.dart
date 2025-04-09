@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/controller/book_details_page_controller.dart';
+import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/screens/bookDetail/book_detail_app_bar.dart';
 import 'package:stories/screens/bookDetail/book_detail_content.dart';
 
