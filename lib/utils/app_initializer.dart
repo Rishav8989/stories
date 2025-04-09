@@ -7,6 +7,7 @@ import 'package:stories/utils/user_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:stories/controller/font_controller.dart';
 
 class AppInitializer {
   static Future<void> init() async {
@@ -29,6 +30,9 @@ class AppInitializer {
     // Force initial theme update
     Get.changeTheme(themeController.themeData);
     Get.changeThemeMode(themeController.themeMode);
+
+    // Initialize FontController
+    Get.put(FontController());
 
     // Initialize UserService with pb instance
     Get.put(UserService(pb));

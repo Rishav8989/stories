@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fontController = Get.put(FontController());
+    final fontController = Get.find<FontController>();
     final themeController = Get.find<ThemeController>();
     
     return Obx(() {
