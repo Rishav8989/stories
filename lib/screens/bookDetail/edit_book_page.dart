@@ -16,28 +16,37 @@ class EditBookPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<BookDetailsController>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Book'),
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
+          TextButton(
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
                 try {
-                  final controller = Get.find<BookDetailsController>();
                   await controller.updateBook(
                     book.id,
-                    _titleController.text,
-                    _descriptionController.text,
+                    _titleController.text.trim(),
+                    _descriptionController.text.trim(),
                   );
                   Get.back();
-                  Get.snackbar('Success', 'Book updated successfully');
                 } catch (e) {
-                  Get.snackbar('Error', 'Failed to update book');
+                  Get.snackbar(
+                    'Error',
+                    'Failed to update book',
+                    backgroundColor: colorScheme.error,
+                    colorText: colorScheme.onError,
+                  );
                 }
               }
             },
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -46,33 +55,84 @@ class EditBookPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Book Title',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _titleController,
+                      style: textTheme.bodyLarge,
+                      decoration: InputDecoration(
+                        hintText: 'Enter book title',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a title';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Description',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _descriptionController,
+                      style: textTheme.bodyLarge,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: 'Enter book description',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a description';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-              maxLines: 5,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a description';
-                }
-                return null;
-              },
             ),
           ],
         ),

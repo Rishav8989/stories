@@ -43,14 +43,6 @@ class BookDetailChapters extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
-              if (controller.book.value?.author == controller.userId)
-                IconButton(
-                  icon: const Icon(Icons.reorder),
-                  tooltip: 'Reorder Chapters',
-                  onPressed: () {
-                    Get.to(() => ReorderChaptersPage(controller: controller));
-                  },
-                ),
             ],
           ),
           const SizedBox(height: 8),
