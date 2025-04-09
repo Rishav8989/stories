@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stories/utils/user_service.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 
@@ -8,7 +9,7 @@ class ChapterController extends GetxController {
   final isLoading = false.obs;
   final UserService _userService;
   
-  ChapterController() : _userService = Get.find<UserService>();
+  ChapterController() : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
 
   Future<void> createChapter({
     required String bookId,
@@ -47,14 +48,28 @@ class ChapterController extends GetxController {
 
   Future<List<Map<String, dynamic>>> getChapters(String bookId) async {
     try {
-      final result = await _userService.pb.collection('chapters').getFullList(
-        filter: 'book = "$bookId" && type = "chapter"',
-        sort: 'order_number',
-      );
-      return result.map((record) => record.data).toList();
+      final records = await _userService.pb
+          .collection('chapters')
+          .getList(
+            filter: 'book = "$bookId"',
+            sort: 'order_number',
+          );
+      return records.items.map((record) => record.data).toList();
     } catch (e) {
-      print('Error fetching chapters: $e');
+      print("Error fetching chapters: $e");
       return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> getChapterContent(String chapterId) async {
+    try {
+      final record = await _userService.pb
+          .collection('chapters')
+          .getOne(chapterId);
+      return record.data;
+    } catch (e) {
+      print("Error fetching chapter content: $e");
+      rethrow;
     }
   }
 } 

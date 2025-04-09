@@ -7,6 +7,7 @@ import 'package:stories/models/book_model.dart';
 import 'package:stories/screens/bookDetail/book_detail_action_buttons.dart';
 import 'package:stories/screens/bookDetail/book_detail_description.dart';
 import 'package:stories/screens/bookDetail/book_detail_info_card.dart';
+import 'package:stories/screens/bookDetail/book_detail_chapters.dart';
 
 class BookDetailContent extends StatelessWidget {
   // Make controller final as it shouldn't change after initialization
@@ -133,6 +134,8 @@ class BookDetailContent extends StatelessWidget {
                 BookDetailInfoCard(book: currentBook, controller: controller),
                 const SizedBox(height: 24),
                 BookDetailDescription(book: currentBook, controller: controller),
+                const SizedBox(height: 24),
+                BookDetailChapters(controller: controller),
                 const SizedBox(height: 24),
                 // Check author against controller's userId and use currentBook
                 if (currentBook.author == controller.userId)
