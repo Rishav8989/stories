@@ -70,7 +70,6 @@ class AddChapterPage extends StatelessWidget {
                                 bookId: bookId,
                                 title: titleController.text.trim(),
                                 content: contentController.text.trim(),
-                                orderNumber: nextOrderNumber,
                               );
                             }
                           },

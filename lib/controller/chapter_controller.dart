@@ -11,26 +11,47 @@ class ChapterController extends GetxController {
   
   ChapterController() : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
 
+  Future<int> getNextOrderNumber(String bookId) async {
+    try {
+      final chapters = await _userService.pb
+          .collection('chapters')
+          .getList(
+            filter: 'book = "$bookId"',
+            sort: '-order_number',
+            perPage: 1,
+          );
+      
+      if (chapters.items.isEmpty) {
+        return 1; // First chapter
+      }
+      
+      final lastChapter = chapters.items.first;
+      final lastOrderNumber = lastChapter.data['order_number'] as int;
+      return lastOrderNumber + 1;
+    } catch (e) {
+      print("Error getting next order number: $e");
+      return 1; // Fallback to 1 if there's an error
+    }
+  }
+
   Future<void> createChapter({
     required String bookId,
     required String title,
     required String content,
-    required int orderNumber,
+    String type = 'content',
   }) async {
     isLoading.value = true;
     try {
-      final data = {
+      final orderNumber = await getNextOrderNumber(bookId);
+      
+      await _userService.pb.collection('chapters').create(body: {
         "book": bookId,
         "title": title,
         "content": content,
         "status": "draft",
-        "type": "description",
+        "type": type,
         "order_number": orderNumber,
-      };
-
-      print("Creating chapter with data: $data");
-
-      await _userService.pb.collection('chapters').create(body: data);
+      });
       
       // Refresh the chapters list in the book details controller
       final bookDetailsController = Get.find<BookDetailsController>();
