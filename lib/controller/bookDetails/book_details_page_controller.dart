@@ -4,6 +4,7 @@ import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/controller/bookDetails/book_description_logic.dart';
 import 'package:stories/models/book_model.dart';
 import 'package:stories/utils/user_service.dart';
+import 'package:stories/controller/chapter_controller.dart';
 
 class BookDetailsController extends GetxController {
   final isLoading = true.obs;
@@ -11,12 +12,13 @@ class BookDetailsController extends GetxController {
   final hasDescription = false.obs;
   final Rx<String?> description = Rx<String?>(null);
   final Rx<String?> descriptionId = Rx<String?>(null);
+  final RxList<Map<String, dynamic>> chapters = <Map<String, dynamic>>[].obs;
   String? errorMessage;
   String? userId;
   final String bookId;
   final UserService _userService;
   
-  UserService get userService => _userService; // Public accessor for extensions
+  UserService get userService => _userService;
 
   BookDetailsController({required this.bookId})
       : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
@@ -27,6 +29,7 @@ class BookDetailsController extends GetxController {
     _initializeUserId();
     fetchBookDetails();
     fetchDescription();
+    fetchChapters();
   }
 
   Future<void> _initializeUserId() async {
@@ -50,6 +53,22 @@ class BookDetailsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> fetchChapters() async {
+    try {
+      final chapterController = Get.put(ChapterController());
+      final chaptersList = await chapterController.getChapters(bookId);
+      chapters.value = chaptersList;
+    } catch (e) {
+      print("Error fetching chapters: $e");
+    }
+  }
+
+  int get nextChapterOrderNumber {
+    if (chapters.isEmpty) return 1;
+    final maxOrder = chapters.map((chapter) => chapter['order_number'] as int).reduce((a, b) => a > b ? a : b);
+    return maxOrder + 1;
   }
 
   String? get bookCoverThumbnailUrl {

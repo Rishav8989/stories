@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/bookDetails/book_description_logic.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
+import 'package:stories/screens/chapter/add_chapter_page.dart';
 
 class BookDetailActionButtons extends StatelessWidget {
   final BookDetailsController controller;
@@ -96,8 +97,10 @@ class BookDetailActionButtons extends StatelessWidget {
                   if (!controller.hasDescription.value) const SizedBox(height: 16),
                   buildButton(
                     onPressed: () {
-                      Get.snackbar(
-                          'Info', 'Add Chapter functionality not implemented yet.');
+                      Get.to(() => AddChapterPage(
+                            bookId: controller.bookId,
+                            nextOrderNumber: controller.nextChapterOrderNumber,
+                          ));
                     },
                     icon: Icons.add_circle_outline,
                     label: 'Add Chapter',
@@ -168,8 +171,10 @@ class BookDetailActionButtons extends StatelessWidget {
                       : const SizedBox(width: 16)),
                   buildButton(
                     onPressed: () {
-                      Get.snackbar(
-                          'Info', 'Add Chapter functionality not implemented yet.');
+                      Get.to(() => AddChapterPage(
+                            bookId: controller.bookId,
+                            nextOrderNumber: controller.nextChapterOrderNumber,
+                          ));
                     },
                     icon: Icons.add_circle_outline,
                     label: 'Add Chapter',
