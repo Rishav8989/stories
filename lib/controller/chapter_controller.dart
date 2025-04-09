@@ -257,6 +257,58 @@ class ChapterController extends GetxController {
     }
   }
 
+  Future<Map<String, dynamic>?> getPreviousChapter(String bookId, int currentOrder) async {
+    try {
+      print('Fetching previous chapter for book: $bookId, current order: $currentOrder');
+      final result = await _userService.pb.collection('chapters').getList(
+        filter: 'book = "$bookId" AND order_number < $currentOrder AND type = "content"',
+        sort: '-order_number',
+        perPage: 1,
+      );
+      
+      print('Previous chapter query result: ${result.items.length} items found');
+      if (result.items.isNotEmpty) {
+        final chapter = result.items.first;
+        return {
+          'id': chapter.id,
+          'title': chapter.data['title'] ?? 'Untitled Chapter',
+          'status': chapter.data['status'] ?? 'draft',
+          'order_number': chapter.data['order_number'] ?? 0,
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Error getting previous chapter: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getNextChapter(String bookId, int currentOrder) async {
+    try {
+      print('Fetching next chapter for book: $bookId, current order: $currentOrder');
+      final result = await _userService.pb.collection('chapters').getList(
+        filter: 'book = "$bookId" AND order_number > $currentOrder AND type = "content"',
+        sort: 'order_number',
+        perPage: 1,
+      );
+      
+      print('Next chapter query result: ${result.items.length} items found');
+      if (result.items.isNotEmpty) {
+        final chapter = result.items.first;
+        return {
+          'id': chapter.id,
+          'title': chapter.data['title'] ?? 'Untitled Chapter',
+          'status': chapter.data['status'] ?? 'draft',
+          'order_number': chapter.data['order_number'] ?? 0,
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Error getting next chapter: $e');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> getChapterContent(String chapterId) async {
     try {
       final record = await _userService.pb
@@ -277,11 +329,10 @@ class ChapterController extends GetxController {
       currentContent.value = content['content'] ?? '';
       chapterTitle.value = content['title'] ?? '';
       chapterStatus.value = content['status'] ?? 'draft';
-      currentChapterOrder.value = content['order_number'] ?? 0;
       currentChapterId.value = chapterId;
+      currentChapterOrder.value = content['order_number'] ?? 0;
 
-      // Subscribe to real-time updates for this chapter
-      await _subscribeToChapter(chapterId);
+      print('Loaded chapter: ${content['title']}, order: ${content['order_number']}');
       
       return content;
     } catch (e) {
@@ -294,34 +345,6 @@ class ChapterController extends GetxController {
         }
       }
       throw Exception('Failed to load chapter content: ${e.toString()}');
-    }
-  }
-
-  Future<Map<String, dynamic>?> getPreviousChapter(String bookId, int currentOrder) async {
-    try {
-      final result = await _userService.pb.collection('chapters').getList(
-        filter: 'book = "$bookId" && order_number < $currentOrder',
-        sort: '-order_number',
-        perPage: 1,
-      );
-      return result.items.isNotEmpty ? result.items.first.toJson() : null;
-    } catch (e) {
-      print('Error getting previous chapter: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> getNextChapter(String bookId, int currentOrder) async {
-    try {
-      final result = await _userService.pb.collection('chapters').getList(
-        filter: 'book = "$bookId" && order_number > $currentOrder',
-        sort: 'order_number',
-        perPage: 1,
-      );
-      return result.items.isNotEmpty ? result.items.first.toJson() : null;
-    } catch (e) {
-      print('Error getting next chapter: $e');
-      return null;
     }
   }
 } 
