@@ -22,12 +22,22 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
   final TextEditingController _messageController = TextEditingController();
   final List<DiscussionMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
-    _discussionService.subscribeToMessages(widget.bookId, _handleNewMessage);
+    _setupRealtimeSubscription();
+  }
+
+  void _setupRealtimeSubscription() {
+    _discussionService.subscribeToMessages(
+      widget.bookId,
+      onNewMessage: _handleNewMessage,
+      onMessageUpdate: _handleMessageUpdate,
+      onMessageDelete: _handleMessageDelete,
+    );
   }
 
   @override
@@ -39,11 +49,23 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
   }
 
   Future<void> _loadMessages() async {
-    final messages = await _discussionService.getMessages(widget.bookId);
-    setState(() {
-      _messages.addAll(messages);
-    });
-    _scrollToBottom();
+    setState(() => _isLoading = true);
+    try {
+      final messages = await _discussionService.getMessages(widget.bookId);
+      setState(() {
+        _messages.clear();
+        _messages.addAll(messages);
+        _isLoading = false;
+      });
+      _scrollToBottom();
+    } catch (e) {
+      setState(() => _isLoading = false);
+      Get.snackbar(
+        'Error',
+        'Failed to load messages',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   void _handleNewMessage(DiscussionMessage message) {
@@ -51,6 +73,21 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
       _messages.insert(0, message);
     });
     _scrollToBottom();
+  }
+
+  void _handleMessageUpdate(DiscussionMessage message) {
+    setState(() {
+      final index = _messages.indexWhere((m) => m.id == message.id);
+      if (index != -1) {
+        _messages[index] = message;
+      }
+    });
+  }
+
+  void _handleMessageDelete(DiscussionMessage message) {
+    setState(() {
+      _messages.removeWhere((m) => m.id == message.id);
+    });
   }
 
   void _scrollToBottom() {
@@ -89,18 +126,23 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            reverse: true,
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final message = _messages[index];
-              return MessageBubble(
-                message: message,
-                isMe: message.userId == widget.userId,
-              );
-            },
-          ),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  controller: _scrollController,
+                  reverse: true,
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final message = _messages[index];
+                    return MessageBubble(
+                      message: message,
+                      isMe: message.userId == widget.userId,
+                      onDelete: message.userId == widget.userId
+                          ? () => _discussionService.deleteMessage(message.id)
+                          : null,
+                    );
+                  },
+                ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -114,6 +156,7 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
                     border: OutlineInputBorder(),
                   ),
                   maxLines: null,
+                  onSubmitted: (_) => _sendMessage(),
                 ),
               ),
               const SizedBox(width: 8),
@@ -132,11 +175,13 @@ class _DiscussionRoomState extends State<DiscussionRoom> {
 class MessageBubble extends StatelessWidget {
   final DiscussionMessage message;
   final bool isMe;
+  final VoidCallback? onDelete;
 
   const MessageBubble({
     Key? key,
     required this.message,
     required this.isMe,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -153,6 +198,36 @@ class MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (message.replyToMessage != null)
+              Container(
+                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isMe ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Replying to ${message.replyToUserName ?? "Unknown User"}',
+                      style: TextStyle(
+                        color: isMe ? Colors.white70 : Colors.black54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      message.replyToMessage!,
+                      style: TextStyle(
+                        color: isMe ? Colors.white70 : Colors.black54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Text(
               message.message,
               style: TextStyle(
@@ -160,12 +235,28 @@ class MessageBubble extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              _formatTime(message.createdAt),
-              style: TextStyle(
-                color: isMe ? Colors.white70 : Colors.black54,
-                fontSize: 12,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _formatTime(message.createdAt),
+                  style: TextStyle(
+                    color: isMe ? Colors.white70 : Colors.black54,
+                    fontSize: 12,
+                  ),
+                ),
+                if (onDelete != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: isMe ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

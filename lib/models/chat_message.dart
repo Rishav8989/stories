@@ -9,6 +9,9 @@ class ChatMessage {
   final String senderName;
   final String content;
   final DateTime timestamp;
+  final String? replyTo;
+  final String? replyToUserName;
+  final String? replyToMessage;
 
   ChatMessage({
     required this.id,
@@ -16,6 +19,9 @@ class ChatMessage {
     required this.senderName,
     required this.content,
     required this.timestamp,
+    this.replyTo,
+    this.replyToUserName,
+    this.replyToMessage,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => _$ChatMessageFromJson(json);

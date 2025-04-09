@@ -35,6 +35,7 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
   final DateFormat _timeFormat = DateFormat('h:mm a');
   final DateFormat _dateFormat = DateFormat('MMM d, yyyy');
   late final tz.Location _localLocation;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -45,7 +46,19 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
     _bookController = Get.find<BookDetailsController>(tag: widget.bookId);
     _loadMessages();
     _loadDiscussionRules();
-    _discussionService.subscribeToMessages(widget.bookId, _handleNewMessage);
+    _discussionService.subscribeToMessages(
+      widget.bookId,
+      onNewMessage: _handleNewMessage,
+      onMessageUpdate: _handleMessageUpdate,
+      onMessageDelete: _handleMessageDelete,
+    );
+
+    // Add scroll listener
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        _loadMessages();
+      }
+    });
   }
 
   @override
@@ -58,11 +71,39 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
   }
 
   Future<void> _loadMessages() async {
-    final messages = await _discussionService.getMessages(widget.bookId);
+    if (_isLoading) return;
+
     setState(() {
-      _messages.addAll(messages);
+      _isLoading = true;
     });
-    _scrollToBottom();
+
+    try {
+      print('Loading messages for book: ${widget.bookId}');
+      final messages = await _discussionService.getMessages(widget.bookId);
+      print('Received ${messages.length} messages');
+
+      if (!mounted) return;
+
+      setState(() {
+        _messages.clear();
+        _messages.addAll(messages);
+        _isLoading = false;
+      });
+      print('Messages loaded into state: ${_messages.length}');
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      print('Error loading messages: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load messages',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   void _handleNewMessage(DiscussionMessage message) {
@@ -70,6 +111,21 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
       _messages.insert(0, message);
     });
     _scrollToBottom();
+  }
+
+  void _handleMessageUpdate(DiscussionMessage message) {
+    setState(() {
+      final index = _messages.indexWhere((m) => m.id == message.id);
+      if (index != -1) {
+        _messages[index] = message;
+      }
+    });
+  }
+
+  void _handleMessageDelete(DiscussionMessage message) {
+    setState(() {
+      _messages.removeWhere((m) => m.id == message.id);
+    });
   }
 
   void _scrollToBottom() {
@@ -121,11 +177,19 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
   Future<void> _loadDiscussionRules() async {
     try {
       final record = await _discussionService.getDiscussionRules(widget.bookId);
-      setState(() {
-        _discussionRules = record?.rules;
-      });
+      if (mounted) {
+        setState(() {
+          _discussionRules = record?.rules;
+        });
+      }
     } catch (e) {
       print('Error loading discussion rules: $e');
+      // Don't show error to user, just skip the rules
+      if (mounted) {
+        setState(() {
+          _isFirstTimeUser = false;
+        });
+      }
     }
   }
 
@@ -226,6 +290,7 @@ class _DiscussionRoomScreenState extends State<DiscussionRoomScreen> with Single
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final message = _messages[index];
+                        print('Building message at index $index: ${message.id} - ${message.message}');
                         final isMe = message.userId == widget.userId;
                         
                         final chatMessage = ChatMessage(

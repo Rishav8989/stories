@@ -1,155 +1,173 @@
 import 'package:flutter/material.dart';
 import '../models/chat_message.dart';
+import 'chat/chat_message_reply.dart';
+import 'chat/chat_message_content.dart';
+import 'chat/chat_message_actions.dart';
 
 class ChatMessageBubble extends StatefulWidget {
   final ChatMessage message;
   final bool isCurrentUser;
   final VoidCallback? onDelete;
+  final VoidCallback? onReply;
   final String? senderAvatarUrl;
-  final String? formattedTime;
+  final String formattedTime;
+  final Function(String messageId)? onReplyTap;
+  final bool isHighlighted;
 
   const ChatMessageBubble({
     Key? key,
     required this.message,
     required this.isCurrentUser,
     this.onDelete,
+    this.onReply,
     this.senderAvatarUrl,
-    this.formattedTime,
+    required this.formattedTime,
+    this.onReplyTap,
+    this.isHighlighted = false,
   }) : super(key: key);
 
   @override
   State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
 }
 
-class _ChatMessageBubbleState extends State<ChatMessageBubble> {
-  bool _showDeleteIcon = false;
+class _ChatMessageBubbleState extends State<ChatMessageBubble> with SingleTickerProviderStateMixin {
+  bool _showDeleteButton = false;
+  late final AnimationController _highlightController;
+  late final Animation<double> _highlightAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _highlightController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _highlightAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _highlightController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _highlightController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(ChatMessageBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isHighlighted && !oldWidget.isHighlighted) {
+      _highlightController.forward(from: 0.0);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (_showDeleteIcon) {
-          setState(() {
-            _showDeleteIcon = false;
-          });
-        }
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Dismissible(
+      key: Key(widget.message.id),
+      direction: DismissDirection.horizontal,
+      background: Container(
+        color: colorScheme.primary.withOpacity(0.1),
+        child: const Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: EdgeInsets.only(left: 16.0),
+            child: Icon(Icons.reply),
+          ),
+        ),
+      ),
+      secondaryBackground: Container(
+        color: colorScheme.primary.withOpacity(0.1),
+        child: const Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Icon(Icons.reply),
+          ),
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        widget.onReply?.call();
+        return false;
       },
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 600),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Column(
-          crossAxisAlignment: widget.isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8, bottom: 4),
-              child: Row(
-                mainAxisAlignment: widget.isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                children: [
-                  if (!widget.isCurrentUser) ...[
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundImage: widget.senderAvatarUrl != null
-                          ? NetworkImage(widget.senderAvatarUrl!)
-                          : null,
-                      child: widget.senderAvatarUrl == null
-                          ? Text(widget.message.senderName[0].toUpperCase())
-                          : null,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.message.senderName,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ],
-                  if (widget.isCurrentUser) ...[
-                    Text(
-                      'You',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+      child: GestureDetector(
+        onLongPress: () {
+          if (widget.isCurrentUser) {
+            setState(() {
+              _showDeleteButton = true;
+            });
+          }
+        },
+        onTap: () {
+          if (_showDeleteButton) {
+            setState(() {
+              _showDeleteButton = false;
+            });
+          }
+        },
+        child: Align(
+          alignment: widget.isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
-            Row(
-              mainAxisAlignment: widget.isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.isCurrentUser && _showDeleteIcon) ...[
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 24),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Delete Message'),
-                          content: Text('Are you sure you want to delete this message from ${widget.message.senderName}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                widget.onDelete?.call();
-                              },
-                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                GestureDetector(
-                  onTap: widget.isCurrentUser ? () {
+                ChatMessageActions(
+                  showDeleteButton: _showDeleteButton,
+                  isCurrentUser: widget.isCurrentUser,
+                  onDelete: () {
+                    widget.onDelete?.call();
                     setState(() {
-                      _showDeleteIcon = true;
+                      _showDeleteButton = false;
                     });
-                  } : null,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: widget.isCurrentUser
-                          ? Theme.of(context).primaryColor
-                          : Theme.of(context).colorScheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.message.content,
-                          style: TextStyle(
-                            color: widget.isCurrentUser ? Colors.white : Colors.black,
-                          ),
+                  },
+                  colorScheme: colorScheme,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: widget.isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      if (widget.message.replyTo != null)
+                        ChatMessageReply(
+                          replyToUserName: widget.message.replyToUserName,
+                          replyToMessage: widget.message.replyToMessage,
+                          onReplyTap: () {
+                            if (widget.onReplyTap != null && widget.message.replyTo != null) {
+                              widget.onReplyTap!(widget.message.replyTo!);
+                            }
+                          },
+                          colorScheme: colorScheme,
+                          theme: theme,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.formattedTime ?? _formatTime(widget.message.timestamp),
-                          style: TextStyle(
-                            color: widget.isCurrentUser ? Colors.white70 : Colors.black54,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ChatMessageContent(
+                        content: widget.message.content,
+                        senderName: widget.message.senderName,
+                        formattedTime: widget.formattedTime,
+                        isCurrentUser: widget.isCurrentUser,
+                        colorScheme: colorScheme,
+                        theme: theme,
+                        highlightAnimation: _highlightAnimation,
+                        isHighlighted: widget.isHighlighted,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 } 

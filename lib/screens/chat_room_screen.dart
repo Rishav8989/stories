@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/chat_message.dart';
 import '../widgets/chat_message_bubble.dart';
+import 'package:intl/intl.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String currentUserId;
@@ -20,6 +21,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
+  final DateFormat _timeFormat = DateFormat('h:mm a');
+
+  String _formatMessageTime(DateTime time) {
+    return _timeFormat.format(time);
+  }
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
@@ -79,6 +85,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     message: message,
                     isCurrentUser: isCurrentUser,
                     onDelete: isCurrentUser ? () => _deleteMessage(message.id) : null,
+                    formattedTime: _formatMessageTime(message.timestamp),
                   );
                 },
               ),
