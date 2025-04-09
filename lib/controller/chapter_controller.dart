@@ -6,12 +6,53 @@ import 'package:stories/utils/user_service.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 
 class ChapterController extends GetxController {
+  late final UserService _userService;
   final isLoading = false.obs;
   final currentContent = ''.obs;
+  final currentChapterId = ''.obs;
+  final chapterTitle = ''.obs;
+  final chapterStatus = ''.obs;
   final currentChapterOrder = 0.obs;
-  final UserService _userService;
+  UnsubscribeFunc? _chapterSubscription;
   
-  ChapterController() : _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
+  @override
+  void onInit() {
+    super.onInit();
+    _userService = Get.find<UserService>();
+  }
+
+  @override
+  void onClose() {
+    _unsubscribeFromChapter();
+    super.onClose();
+  }
+
+  void _unsubscribeFromChapter() {
+    _chapterSubscription?.call();
+    _chapterSubscription = null;
+  }
+
+  Future<void> _subscribeToChapter(String chapterId) async {
+    // Unsubscribe from previous subscription if exists
+    _unsubscribeFromChapter();
+
+    // Subscribe to changes in the specific chapter
+    _chapterSubscription = await _userService.pb.collection('chapters').subscribe(
+      chapterId,
+      (e) {
+        if (e.action == 'update') {
+          // Update local state with new data
+          final record = e.record;
+          if (record != null) {
+            currentContent.value = record.data['content'] ?? '';
+            chapterTitle.value = record.data['title'] ?? '';
+            chapterStatus.value = record.data['status'] ?? 'draft';
+            currentChapterOrder.value = record.data['order_number'] ?? 0;
+          }
+        }
+      },
+    );
+  }
 
   Future<bool> isBookOwner(String bookId) async {
     try {
@@ -83,21 +124,106 @@ class ChapterController extends GetxController {
     }
   }
 
-  Future<void> publishChapter(String chapterId) async {
+  Future<bool> publishChapter(String chapterId) async {
     try {
-      await _userService.pb.collection('chapters').update(chapterId, body: {
-        "status": "published",
-      });
+      isLoading.value = true;
+
+      // Get current chapter data
+      final currentChapter = await _userService.pb.collection('chapters').getOne(chapterId);
       
-      // Refresh the chapters list in the book details controller
-      final bookDetailsController = Get.find<BookDetailsController>();
-      await bookDetailsController.fetchChapters();
+      final data = {
+        'title': currentChapter.data['title'],
+        'content': currentChapter.data['content'],
+        'status': 'published',
+        'book': currentChapter.data['book'],
+        'type': currentChapter.data['type'],
+        'order_number': currentChapter.data['order_number'],
+        'updated': DateTime.now().toIso8601String(),
+        'published': DateTime.now().toIso8601String(),
+      };
+
+      await _userService.pb.collection('chapters').update(chapterId, body: data);
       
-      Get.back(); // Return to previous screen
-      Get.snackbar('Success', 'Chapter published successfully!', backgroundColor: Colors.green);
+      // Update local state if this is the current chapter
+      if (currentChapter.id == currentChapterId.value) {
+        chapterStatus.value = 'published';
+      }
+
+      Get.snackbar(
+        'Success',
+        'Chapter published successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return true;
     } catch (e) {
-      print("Error publishing chapter: $e");
-      Get.snackbar('Error', 'Failed to publish chapter: $e', backgroundColor: Colors.red);
+      print('Error publishing chapter: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to publish chapter: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<bool> updateChapter({
+    required String chapterId,
+    required String title,
+    required String content,
+    String? status,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      // Get current chapter data to preserve other fields
+      final currentChapter = await _userService.pb.collection('chapters').getOne(chapterId);
+      
+      final data = {
+        'title': title,
+        'content': content,
+        'status': 'draft', // Always save as draft
+        'book': currentChapter.data['book'],
+        'type': currentChapter.data['type'],
+        'order_number': currentChapter.data['order_number'],
+        'updated': DateTime.now().toIso8601String(),
+      };
+
+      await _userService.pb.collection('chapters').update(chapterId, body: data);
+      
+      // Update local state if this is the current chapter
+      if (currentChapter.id == currentChapterId.value) {
+        currentContent.value = content;
+        chapterTitle.value = title;
+        chapterStatus.value = 'draft';
+      }
+
+      Get.snackbar(
+        'Success',
+        'Chapter saved as draft',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      
+      return true;
+    } catch (e) {
+      print('Error updating chapter: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to update chapter: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -149,7 +275,14 @@ class ChapterController extends GetxController {
       };
       
       currentContent.value = content['content'] ?? '';
+      chapterTitle.value = content['title'] ?? '';
+      chapterStatus.value = content['status'] ?? 'draft';
       currentChapterOrder.value = content['order_number'] ?? 0;
+      currentChapterId.value = chapterId;
+
+      // Subscribe to real-time updates for this chapter
+      await _subscribeToChapter(chapterId);
+      
       return content;
     } catch (e) {
       print("Error fetching chapter content: $e");

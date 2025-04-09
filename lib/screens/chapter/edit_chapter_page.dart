@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
+import 'package:stories/controller/chapter_controller.dart';
 import 'package:stories/utils/reading_time_calculator.dart';
+import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 
 class EditChapterPage extends StatefulWidget {
   final String chapterId;
@@ -29,7 +30,7 @@ class _EditChapterPageState extends State<EditChapterPage> {
   final RxInt lineCount = 0.obs;
   final RxDouble fontSize = 16.0.obs;
   final RxBool _hasUnsavedChanges = false.obs;
-  late BookDetailsController bookDetailsController;
+  late ChapterController controller;
 
   @override
   void initState() {
@@ -38,21 +39,13 @@ class _EditChapterPageState extends State<EditChapterPage> {
     contentController = TextEditingController(text: widget.initialContent);
     _updateCounts(widget.initialContent);
     
-    // Initialize BookDetailsController with the correct bookId
-    bookDetailsController = Get.put(
-      BookDetailsController(
-        userService: Get.find(),
-        pb: Get.find(),
-        bookId: widget.bookId,
-      ),
-      tag: 'edit_chapter_${widget.chapterId}',
-      permanent: false,
-    );
+    // Initialize ChapterController
+    controller = Get.find<ChapterController>();
 
     // Add listeners for detecting changes
     titleController.addListener(() {
       _onContentChanged();
-      _updateCounts(contentController.text);
+      _updateCounts(titleController.text);
     });
     contentController.addListener(() {
       _onContentChanged();
@@ -76,7 +69,6 @@ class _EditChapterPageState extends State<EditChapterPage> {
   void dispose() {
     titleController.dispose();
     contentController.dispose();
-    Get.delete<BookDetailsController>(tag: 'edit_chapter_${widget.chapterId}');
     super.dispose();
   }
 
@@ -102,7 +94,7 @@ class _EditChapterPageState extends State<EditChapterPage> {
                   onPressed: () async {
                     if (formKey.currentState?.validate() ?? false) {
                       try {
-                        await bookDetailsController.updateChapter(
+                        await controller.updateChapter(
                           chapterId: widget.chapterId,
                           title: titleController.text.trim(),
                           content: contentController.text.trim(),
@@ -135,18 +127,66 @@ class _EditChapterPageState extends State<EditChapterPage> {
         appBar: AppBar(
           title: const Text('Edit Chapter'),
           actions: [
-            TextButton(
-              onPressed: () async {
+            Obx(() => TextButton(
+              onPressed: controller.isLoading.value ? null : () async {
                 if (formKey.currentState?.validate() ?? false) {
+                  // Show saving dialog
+                  Get.dialog(
+                    WillPopScope(
+                      onWillPop: () async => false, // Prevent closing with back button
+                      child: Center(
+                        child: Card(
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CircularProgressIndicator(),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Saving chapter...',
+                                  style: textTheme.titleMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    barrierDismissible: false,
+                  );
+
                   try {
-                    await bookDetailsController.updateChapter(
+                    final success = await controller.updateChapter(
                       chapterId: widget.chapterId,
                       title: titleController.text.trim(),
                       content: contentController.text.trim(),
                     );
-                    _hasUnsavedChanges.value = false;
-                    Get.back(result: true);
+
+                    // Close the saving dialog
+                    Get.back();
+
+                    if (success) {
+                      _hasUnsavedChanges.value = false;
+                      
+                      // Find and refresh BookDetailsController if it exists
+                      try {
+                        final bookController = Get.find<BookDetailsController>();
+                        await bookController.fetchChapters();
+                      } catch (e) {
+                        print('BookDetailsController not found or refresh failed: $e');
+                      }
+
+                      // Return to previous screen with refresh signal and force navigation
+                      Get.back(result: true);
+                      Get.back();
+                    }
                   } catch (e) {
+                    // Close the saving dialog if still open
+                    if (Get.isDialogOpen ?? false) {
+                      Get.back();
+                    }
+
                     Get.snackbar(
                       'Error',
                       'Failed to save chapter: ${e.toString()}',
@@ -158,8 +198,17 @@ class _EditChapterPageState extends State<EditChapterPage> {
                   }
                 }
               },
-              child: const Text('Save'),
-            ),
+              child: controller.isLoading.value
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Text('Save'),
+            )),
           ],
         ),
         body: Obx(() => Container(
@@ -217,22 +266,18 @@ class _EditChapterPageState extends State<EditChapterPage> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: contentController,
+                    maxLines: null,
                     style: TextStyle(
                       fontSize: fontSize.value,
                       color: textTheme.bodyLarge?.color,
-                      height: 1.5,
                     ),
-                    maxLines: null,
-                    minLines: 15,
                     decoration: InputDecoration(
                       hintText: 'Enter chapter content',
                       border: const OutlineInputBorder(),
-                      alignLabelWithHint: true,
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter content' : null,
                   ),
-                  const SizedBox(height: 16),
                 ],
               ),
             ),

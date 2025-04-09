@@ -121,13 +121,18 @@ class BookDetailChapters extends StatelessWidget {
                         ),
                       ],
                     ),
-                    onTap: () {
-                      Get.to(() => ChapterContentPage(
-                            chapterId: chapter.id,
-                            bookId: controller.bookId,
-                            chapterTitle: chapter.title,
-                            status: status,
-                          ));
+                    onTap: () async {
+                      final result = await Get.to(() => ChapterContentPage(
+                        chapterId: chapter.id,
+                        bookId: controller.bookId,
+                        chapterTitle: chapter.title,
+                        status: status,
+                      ));
+                      
+                      // Refresh chapters list if chapter was published or edited
+                      if (result == 'published' || result == true) {
+                        await controller.fetchChapters();
+                      }
                     },
                   ),
                 );

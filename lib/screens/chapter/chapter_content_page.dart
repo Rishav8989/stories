@@ -32,15 +32,50 @@ class ChapterContentPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(chapterTitle),
+        title: Obx(() => Text(controller.chapterTitle.value.isEmpty ? chapterTitle : controller.chapterTitle.value)),
         centerTitle: true,
         actions: [
           if (status == 'draft')
-            IconButton(
-              icon: const Icon(Icons.publish),
-              onPressed: () => controller.publishChapter(chapterId),
+            Obx(() => IconButton(
+              icon: controller.isLoading.value 
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.publish),
               tooltip: 'Publish this chapter to make it visible to readers',
-            ),
+              onPressed: controller.isLoading.value ? null : () => showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Publish Chapter'),
+                  content: const Text('Once published, this chapter will be visible to all readers. Are you sure you want to publish?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        final success = await controller.publishChapter(chapterId);
+                        if (success) {
+                          Get.back(result: 'published');
+                        }
+                      },
+                      child: const Text('Publish'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: colorScheme.primary,
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )),
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit chapter title and content',
@@ -55,10 +90,7 @@ class ChapterContentPage extends StatelessWidget {
                     initialContent: chapterContent['content'] ?? '',
                   ));
                   
-                  // Refresh content if save was successful
-                  if (result == true) {
-                    await controller.getChapterContent(chapterId);
-                  }
+                  // No need to manually refresh content since we have real-time updates
                 }
               } catch (e) {
                 Get.snackbar(
@@ -90,8 +122,13 @@ class ChapterContentPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              Text(
+                content,
+                style: textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
@@ -108,15 +145,7 @@ class ChapterContentPage extends StatelessWidget {
                     },
                     tooltip: 'Previous Chapter',
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        content,
-                        style: textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(width: 32),
                   IconButton(
                     icon: const Icon(Icons.arrow_forward),
                     onPressed: () async {
