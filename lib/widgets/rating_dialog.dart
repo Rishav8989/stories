@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' show Obx;
 import 'package:stories/controller/rating_controller.dart';
 import 'package:stories/models/rating_model.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' show Get, Obx, obs;
 import 'package:stories/controller/rating_controller.dart';
 
 class RateBookWidget extends StatelessWidget {
