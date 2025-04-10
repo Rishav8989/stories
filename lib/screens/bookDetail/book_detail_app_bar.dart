@@ -80,6 +80,30 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   if (book.author == controller.userId) {
                     items.addAll([
                       PopupMenuItem<String>(
+                        value: 'export',
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.download,
+                              color: colorScheme.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Export as PDF',
+                              style: TextStyle(
+                                letterSpacing: 0.5,
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
                         value: 'edit',
                         padding: const EdgeInsets.symmetric(
                             horizontal: 24, vertical: 12),
@@ -157,7 +181,9 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   return items;
                 },
                 onSelected: (value) async {
-                  if (value == 'delete') {
+                  if (value == 'export') {
+                    await controller.exportBookAsPdf();
+                  } else if (value == 'delete') {
                     final confirm = await Get.dialog<bool>(
                       AlertDialog(
                         shape: RoundedRectangleBorder(

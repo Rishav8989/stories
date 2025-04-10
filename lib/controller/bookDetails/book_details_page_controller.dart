@@ -11,6 +11,13 @@ import 'package:stories/models/chapter_model.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
 class BookDetailsController extends GetxController with ChapterManagementLogic {
   final UserService userService;
@@ -262,6 +269,133 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
     } catch (e) {
       print('Error updating chapter: $e');
       throw e;
+    }
+  }
+
+  Future<void> exportBookAsPdf() async {
+    try {
+      isLoading.value = true;
+      
+      // Get all chapters sorted by order number
+      final sortedChapters = chapters
+          .where((chapter) => chapter.orderNumber != 0)
+          .toList()
+        ..sort((a, b) => a.orderNumber.compareTo(b.orderNumber));
+
+      // Create PDF document
+      final pdf = pw.Document();
+
+      // Load the Merriweather font
+      final fontData = await rootBundle.load('assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf');
+      final ttf = pw.Font.ttf(fontData);
+
+      // Load cover image if exists
+      Uint8List? coverImageBytes;
+      if (book.value?.bookCover != null) {
+        final response = await http.get(
+          Uri.parse('${pb.baseUrl}/api/files/books/${book.value!.id}/${book.value!.bookCover}')
+        );
+        coverImageBytes = response.bodyBytes;
+      }
+
+      // Add cover page
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Column(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  if (coverImageBytes != null)
+                    pw.Image(
+                      pw.MemoryImage(coverImageBytes),
+                      width: 200,
+                      height: 300,
+                    ),
+                  pw.SizedBox(height: 20),
+                  pw.Text(
+                    book.value?.title ?? '',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                      font: ttf,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      // Add each chapter
+      for (final chapter in sortedChapters) {
+        pdf.addPage(
+          pw.Page(
+            build: (pw.Context context) {
+              return pw.Padding(
+                padding: const pw.EdgeInsets.all(20),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      chapter.title,
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                        font: ttf,
+                      ),
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Text(
+                      chapter.content,
+                      style: pw.TextStyle(
+                        fontSize: 12,
+                        font: ttf,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      }
+
+      // Save the PDF to a temporary file
+      final output = await getTemporaryDirectory();
+      final file = File('${output.path}/${book.value?.title ?? 'book'}.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      // Handle sharing based on platform
+      if (Platform.isLinux) {
+        // For Linux, show a dialog with the file path
+        Get.dialog(
+          AlertDialog(
+            title: const Text('PDF Exported'),
+            content: Text('PDF has been saved to:\n${file.path}'),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // For other platforms, use the share functionality
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          text: '${book.value?.title ?? 'Book'} PDF Export',
+        );
+      }
+
+      Get.snackbar('Success', 'Book exported successfully!', backgroundColor: Colors.green);
+    } catch (e) {
+      print("Error exporting book: $e");
+      Get.snackbar('Error', 'Failed to export book', backgroundColor: Colors.red);
+    } finally {
+      isLoading.value = false;
     }
   }
 }
