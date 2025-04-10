@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:stories/services/account_service.dart';
 import 'package:stories/utils/user_service.dart';
 
 class AccountSecurityPage extends StatelessWidget {
@@ -11,8 +12,8 @@ class AccountSecurityPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pb = Get.find<PocketBase>();
-    final userService = Get.find<UserService>();
+    final accountService = Get.find<AccountService>();
+    const double maxWidth = 400.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,25 +33,25 @@ class AccountSecurityPage extends StatelessWidget {
                 context: context,
                 icon: Icons.lock,
                 text: 'Change Password',
-                onTap: () => _showChangePasswordDialog(context, pb),
+                onTap: () => _showChangePasswordDialog(context, accountService),
               ),
               _buildListTile(
                 context: context,
                 icon: Icons.email,
                 text: 'Change Email',
-                onTap: () => _showChangeEmailDialog(context, pb),
+                onTap: () => _showChangeEmailDialog(context, accountService),
               ),
               _buildListTile(
                 context: context,
                 icon: Icons.verified_user,
                 text: 'Verify Email',
-                onTap: () => _showVerifyEmailDialog(context, pb),
+                onTap: () => _showVerifyEmailDialog(context, accountService),
               ),
               _buildListTile(
                 context: context,
                 icon: Icons.person,
                 text: 'Update Profile',
-                onTap: () => _showUpdateProfileDialog(context, pb),
+                onTap: () => _showUpdateProfileDialog(context, accountService),
               ),
             ],
           ),
@@ -85,7 +86,7 @@ class AccountSecurityPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showChangePasswordDialog(BuildContext context, PocketBase pb) async {
+  Future<void> _showChangePasswordDialog(BuildContext context, AccountService accountService) async {
     final oldPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
@@ -145,13 +146,11 @@ class AccountSecurityPage extends StatelessWidget {
                         }
                         try {
                           final userId = await Get.find<UserService>().getUserId();
-                          await pb.collection('users').update(
-                            userId!,
-                            body: {
-                              'password': newPasswordController.text,
-                              'passwordConfirm': confirmPasswordController.text,
-                              'oldPassword': oldPasswordController.text,
-                            },
+                          await accountService.changePassword(
+                            userId: userId!,
+                            oldPassword: oldPasswordController.text,
+                            newPassword: newPasswordController.text,
+                            confirmPassword: confirmPasswordController.text,
                           );
                           Get.snackbar('Success', 'Password updated successfully');
                           Navigator.of(context).pop();
@@ -171,7 +170,7 @@ class AccountSecurityPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showChangeEmailDialog(BuildContext context, PocketBase pb) async {
+  Future<void> _showChangeEmailDialog(BuildContext context, AccountService accountService) async {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
 
@@ -216,7 +215,7 @@ class AccountSecurityPage extends StatelessWidget {
                     TextButton(
                       onPressed: () async {
                         try {
-                          await pb.collection('users').requestEmailChange(emailController.text);
+                          await accountService.requestEmailChange(emailController.text);
                           Get.snackbar('Success', 'Email change request sent. Please check your new email.');
                           Navigator.of(context).pop();
                         } catch (e) {
@@ -235,9 +234,8 @@ class AccountSecurityPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showVerifyEmailDialog(BuildContext context, PocketBase pb) async {
-    // Get current user's email
-    final currentUser = await pb.authStore.model;
+  Future<void> _showVerifyEmailDialog(BuildContext context, AccountService accountService) async {
+    final currentUser = await accountService.getCurrentUser();
     final emailController = TextEditingController(text: currentUser.data['email']);
 
     return showDialog(
@@ -255,7 +253,7 @@ class AccountSecurityPage extends StatelessWidget {
                 TextField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
-                  enabled: false, // Make it read-only since we're using current email
+                  enabled: false,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
@@ -273,7 +271,7 @@ class AccountSecurityPage extends StatelessWidget {
                     TextButton(
                       onPressed: () async {
                         try {
-                          await pb.collection('users').requestVerification(emailController.text);
+                          await accountService.requestVerification(emailController.text);
                           Get.snackbar('Success', 'Verification email sent. Please check your inbox.');
                           Navigator.of(context).pop();
                         } catch (e) {
@@ -292,7 +290,7 @@ class AccountSecurityPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showUpdateProfileDialog(BuildContext context, PocketBase pb) async {
+  Future<void> _showUpdateProfileDialog(BuildContext context, AccountService accountService) async {
     final nameController = TextEditingController();
     final emailVisibility = true.obs;
 
@@ -334,12 +332,10 @@ class AccountSecurityPage extends StatelessWidget {
                       onPressed: () async {
                         try {
                           final userId = await Get.find<UserService>().getUserId();
-                          await pb.collection('users').update(
-                            userId!,
-                            body: {
-                              'name': nameController.text,
-                              'emailVisibility': emailVisibility.value,
-                            },
+                          await accountService.updateProfile(
+                            userId: userId!,
+                            name: nameController.text,
+                            emailVisibility: emailVisibility.value,
                           );
                           Get.snackbar('Success', 'Profile updated successfully');
                           Navigator.of(context).pop();

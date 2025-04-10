@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:stories/controller/font_controller.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/controller/library_controller.dart';
+import 'package:stories/services/account_service.dart';
 import 'dart:io' show Platform;
 
 class AppInitializer {
@@ -43,6 +44,7 @@ class AppInitializer {
 
     // Initialize remaining services and controllers
     final userService = Get.put(UserService(pb));
+    Get.put(AccountService(pb));
     Get.put(AuthController(pb));
     Get.lazyPut<BookDetailsController>(() => BookDetailsController(
       userService: Get.find<UserService>(),
