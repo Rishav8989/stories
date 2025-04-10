@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' show Get, Obx, obs;
+import 'package:get/get.dart' show Get, Obx, RxBool;
 import 'package:stories/controller/rating_controller.dart';
 
 class RateBookWidget extends StatelessWidget {
   final RatingController controller;
-  final showActions = false.obs;
+  final showActions = RxBool(false);
 
   RateBookWidget({
     Key? key,
@@ -213,7 +213,6 @@ class RateBookWidget extends StatelessWidget {
               onPressed: () async {
                 await controller.rateBook(rating, comment: commentController.text);
                 Navigator.of(context).pop();
-                Get.back(result: true);
               },
               child: const Text('Submit'),
             ),
@@ -238,7 +237,6 @@ class RateBookWidget extends StatelessWidget {
             onPressed: () async {
               await controller.deleteRating();
               Navigator.of(context).pop();
-              Get.back(result: true);
             },
             child: Text(
               'Remove',

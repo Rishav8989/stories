@@ -5,6 +5,7 @@ import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/controller/font_controller.dart';
 import 'package:stories/screens/home screen/theme_selector_page.dart';
 import 'package:stories/screens/home screen/about_project_page.dart';
+import 'package:stories/screens/home screen/account_security_page.dart';
 import 'package:stories/utils/translations/language_selector.dart';
 import 'package:stories/utils/translations/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
@@ -50,7 +51,7 @@ class AccountPage extends StatelessWidget {
                 context: context,
                 icon: Icons.security,
                 text: 'Account Security'.tr,
-                onTap: () {},
+                onTap: () => Get.to(() => const AccountSecurityPage()),
               ),
               _buildListTile(
                 context: context,
