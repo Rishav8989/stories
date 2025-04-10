@@ -21,6 +21,7 @@ extension BookManagementLogic on BookDetailsController {
     if (confirm != true) return;
 
     try {
+      isLoading.value = true;
       await userService.pb.collection('books').update(bookId, body: {"status": "published"});
       await fetchBookDetails();
 
@@ -29,10 +30,15 @@ extension BookManagementLogic on BookDetailsController {
           : null;
       await discoverController?.refreshBooks();
 
-      Get.back(result: true);
+      // Force update the book value to trigger UI refresh
+      book.refresh();
+      
       Get.snackbar('Success', 'Book published!', backgroundColor: Colors.green);
     } catch (e) {
       print("Error publishing: $e");
+      Get.snackbar('Error', 'Failed to publish book', backgroundColor: Colors.red);
+    } finally {
+      isLoading.value = false;
     }
   }
 

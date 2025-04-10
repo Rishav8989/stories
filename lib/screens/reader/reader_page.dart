@@ -45,6 +45,7 @@ class _ReaderPageState extends State<ReaderPage> {
     super.initState();
     _initializeChapter();
     _setupScrollListener();
+    _setupBookStatusListener();
   }
 
   void _initializeChapter() {
@@ -62,6 +63,15 @@ class _ReaderPageState extends State<ReaderPage> {
       final currentScroll = scrollController.position.pixels;
       final progress = currentScroll / maxScroll;
       readerController.saveProgress(widget.chapterId, progress);
+    });
+  }
+
+  void _setupBookStatusListener() {
+    ever(bookController.book, (book) {
+      if (book != null && book.status == 'published') {
+        // Re-render the widget when book is published
+        setState(() {});
+      }
     });
   }
 
@@ -88,7 +98,7 @@ class _ReaderPageState extends State<ReaderPage> {
 
     if (index >= 0 && index < chapters.length) {
       final chapter = chapters[index];
-      Get.to(() => ReaderPage(
+      Get.off(() => ReaderPage(
         chapterId: chapter.id,
         bookId: widget.bookId,
         chapterTitle: chapter.title,
@@ -287,22 +297,51 @@ class _ReaderPageState extends State<ReaderPage> {
           .toList()
         ..sort((a, b) => a.orderNumber.compareTo(b.orderNumber));
 
-      return BottomAppBar(
+      return Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: currentChapterIndex > 0
-                  ? () => _navigateToChapter(currentChapterIndex - 1)
-                  : null,
+            Expanded(
+              child: TextButton.icon(
+                onPressed: currentChapterIndex > 0
+                    ? () => _navigateToChapter(currentChapterIndex - 1)
+                    : null,
+                icon: const Icon(Icons.arrow_back_ios),
+                label: const Text('Previous'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ),
             ),
-            Text('${currentChapterIndex + 1} of ${chapters.length}'),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: currentChapterIndex < chapters.length - 1
-                  ? () => _navigateToChapter(currentChapterIndex + 1)
-                  : null,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                '${currentChapterIndex + 1} of ${chapters.length}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            Expanded(
+              child: TextButton.icon(
+                onPressed: currentChapterIndex < chapters.length - 1
+                    ? () => _navigateToChapter(currentChapterIndex + 1)
+                    : null,
+                icon: const Text('Next'),
+                label: const Icon(Icons.arrow_forward_ios),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ),
             ),
           ],
         ),

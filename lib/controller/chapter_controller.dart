@@ -261,7 +261,7 @@ class ChapterController extends GetxController {
     try {
       print('Fetching previous chapter for book: $bookId, current order: $currentOrder');
       final result = await _userService.pb.collection('chapters').getList(
-        filter: 'book = "$bookId" AND order_number < $currentOrder AND type = "content"',
+        filter: '(book = "$bookId") && (order_number < $currentOrder) && (type = "content")',
         sort: '-order_number',
         perPage: 1,
       );
@@ -287,7 +287,7 @@ class ChapterController extends GetxController {
     try {
       print('Fetching next chapter for book: $bookId, current order: $currentOrder');
       final result = await _userService.pb.collection('chapters').getList(
-        filter: 'book = "$bookId" AND order_number > $currentOrder AND type = "content"',
+        filter: '(book = "$bookId") && (order_number > $currentOrder) && (type = "content")',
         sort: 'order_number',
         perPage: 1,
       );
