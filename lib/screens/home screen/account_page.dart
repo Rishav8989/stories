@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:stories/controller/auth_controller.dart';
 import 'package:stories/controller/font_controller.dart';
 import 'package:stories/screens/home screen/theme_selector_page.dart';
+import 'package:stories/screens/home screen/about_project_page.dart';
 import 'package:stories/utils/translations/language_selector.dart';
 import 'package:stories/utils/translations/locale_controller.dart';
 import 'package:stories/utils/theme/theme_controller.dart';
@@ -86,7 +88,14 @@ class AccountPage extends StatelessWidget {
                 context: context,
                 icon: Icons.info,
                 text: 'About This Project'.tr,
-                onTap: () {},
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Get.to(
+                    () => const AboutProjectPage(),
+                    transition: Transition.rightToLeft,
+                    duration: const Duration(milliseconds: 300),
+                  );
+                },
               ),
               _buildLogoutButton(context, authController),
             ],
