@@ -247,63 +247,86 @@ class _ChapterContentPageState extends State<ChapterContentPage> {
                 );
               }
 
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
+              return SizedBox(
+                height: MediaQuery.of(context).size.height - kToolbarHeight,
                 child: Column(
                   children: [
-                    Text(
-                      ReadingTimeCalculator.calculateReadingTime(content),
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                    // Chapter content with max width
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    ReadingTimeCalculator.calculateReadingTime(content),
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    content,
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      height: 1.6,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      content,
-                      style: textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                        letterSpacing: 0.5,
+                    // Bottom navigation buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Obx(() => ElevatedButton.icon(
+                                onPressed: _isLoadingPrevious.value ? null : _navigateToPreviousChapter,
+                                icon: _isLoadingPrevious.value
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.arrow_back),
+                                label: const Text('Previous'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primaryContainer,
+                                  foregroundColor: colorScheme.onPrimaryContainer,
+                                ),
+                              )),
+                              Obx(() => ElevatedButton.icon(
+                                onPressed: _isLoadingNext.value ? null : _navigateToNextChapter,
+                                icon: const Icon(Icons.arrow_forward),
+                                label: _isLoadingNext.value
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Text('Next'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primaryContainer,
+                                  foregroundColor: colorScheme.onPrimaryContainer,
+                                ),
+                              )),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Obx(() => ElevatedButton.icon(
-                          onPressed: _isLoadingPrevious.value ? null : _navigateToPreviousChapter,
-                          icon: _isLoadingPrevious.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.arrow_back),
-                          label: const Text('Previous'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primaryContainer,
-                            foregroundColor: colorScheme.onPrimaryContainer,
-                          ),
-                        )),
-                        const SizedBox(width: 16),
-                        Obx(() => ElevatedButton.icon(
-                          onPressed: _isLoadingNext.value ? null : _navigateToNextChapter,
-                          icon: const Icon(Icons.arrow_forward),
-                          label: _isLoadingNext.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('Next'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primaryContainer,
-                            foregroundColor: colorScheme.onPrimaryContainer,
-                          ),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
                   ],
                 ),
               );
