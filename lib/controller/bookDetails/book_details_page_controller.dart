@@ -24,6 +24,7 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
   final Rx<String?> descriptionId = Rx<String?>(null);
   String? userId;
   String? errorMessage;
+  UnsubscribeFunc? _chaptersSubscription;
 
   // Add reactive variables for edit page
   final RxList<String> selectedGenres = <String>[].obs;
@@ -44,7 +45,32 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
       fetchBookDetails();
       fetchDescription();
       fetchChapters();
+      _subscribeToChapters();
     }
+  }
+
+  @override
+  void onClose() {
+    _unsubscribeFromChapters();
+    super.onClose();
+  }
+
+  void _unsubscribeFromChapters() {
+    _chaptersSubscription?.call();
+    _chaptersSubscription = null;
+  }
+
+  void _subscribeToChapters() async {
+    _unsubscribeFromChapters();
+    
+    _chaptersSubscription = await pb.collection('chapters').subscribe('*', (e) {
+      if (e.action == 'create' || e.action == 'update' || e.action == 'delete') {
+        // Only update if the chapter belongs to this book
+        if (e.record?.data['book'] == bookId && e.record?.data['type'] == 'content') {
+          fetchChapters();
+        }
+      }
+    }, filter: 'book = "$bookId" && type = "content"');
   }
 
   Future<void> _initializeUserId() async {
@@ -94,6 +120,7 @@ class BookDetailsController extends GetxController with ChapterManagementLogic {
       final result = await pb.collection('chapters').getList(
         filter: 'book = "$bookId" && type = "content"',
         sort: 'order_number',
+        fields: 'id,title,order_number,status,type,book', // Only fetch necessary fields
       );
       chapters.value = result.items.map((item) => ChapterModel.fromJson(item.toJson())).toList();
     } catch (e) {

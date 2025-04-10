@@ -332,6 +332,9 @@ class ChapterController extends GetxController {
       currentChapterId.value = chapterId;
       currentChapterOrder.value = content['order_number'] ?? 0;
 
+      // Subscribe to realtime updates for this chapter
+      await _subscribeToChapter(chapterId);
+
       print('Loaded chapter: ${content['title']}, order: ${content['order_number']}');
       
       return content;
