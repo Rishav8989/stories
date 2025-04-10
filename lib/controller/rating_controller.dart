@@ -12,6 +12,7 @@ class RatingController extends GetxController {
   final averageRating = 0.0.obs;
   final totalRatings = 0.obs;
   final isLoading = false.obs;
+  UnsubscribeFunc? _ratingSubscription;
 
   RatingController({
     required UserService userService,
@@ -22,6 +23,66 @@ class RatingController extends GetxController {
   void onInit() {
     super.onInit();
     fetchRatings();
+    _subscribeToRatings();
+  }
+
+  @override
+  void onClose() {
+    _ratingSubscription?.call();
+    super.onClose();
+  }
+
+  Future<void> _subscribeToRatings() async {
+    try {
+      _ratingSubscription = await _userService.pb
+          .collection('ratings')
+          .subscribe('*', (e) {
+        final record = e.record;
+        if (record == null) return;
+
+        // Only process if the rating is for this book
+        if (record.data['book'] != bookId) return;
+
+        switch (e.action) {
+          case 'create':
+            final newRating = RatingModel.fromJson(record.toJson());
+            ratings.add(newRating);
+            _updateAverageRating();
+            break;
+          case 'update':
+            final updatedRating = RatingModel.fromJson(record.toJson());
+            final index = ratings.indexWhere((r) => r.id == record.id);
+            if (index != -1) {
+              ratings[index] = updatedRating;
+              if (userRating.value?.id == record.id) {
+                userRating.value = updatedRating;
+              }
+              _updateAverageRating();
+            }
+            break;
+          case 'delete':
+            ratings.removeWhere((r) => r.id == record.id);
+            if (userRating.value?.id == record.id) {
+              userRating.value = null;
+            }
+            _updateAverageRating();
+            break;
+        }
+      });
+    } catch (e) {
+      print('Error subscribing to ratings: $e');
+    }
+  }
+
+  void _updateAverageRating() {
+    if (ratings.isEmpty) {
+      averageRating.value = 0;
+      totalRatings.value = 0;
+    } else {
+      final sum = ratings.fold<int>(0, (sum, item) => sum + item.rating);
+      averageRating.value = sum / ratings.length;
+      totalRatings.value = ratings.length;
+    }
   }
 
   Future<void> fetchRatings() async {
@@ -33,17 +94,12 @@ class RatingController extends GetxController {
       final result = await _userService.pb.collection('ratings').getList(
         filter: 'book = "$bookId"',
         expand: 'user',
+        sort: '-created',
       );
 
       // Convert to RatingModel list
       ratings.value = result.items.map((item) => RatingModel.fromJson(item.toJson())).toList();
-
-      // Calculate average rating
-      if (ratings.isNotEmpty) {
-        final sum = ratings.fold<int>(0, (sum, item) => sum + item.rating);
-        averageRating.value = sum / ratings.length;
-        totalRatings.value = ratings.length;
-      }
+      _updateAverageRating();
 
       // Find user's rating if they're logged in
       if (userId != null) {
@@ -93,7 +149,6 @@ class RatingController extends GetxController {
         await _userService.pb.collection('ratings').create(body: data);
       }
 
-      await fetchRatings();
       Get.snackbar(
         'Success',
         'Rating submitted successfully',
@@ -117,7 +172,6 @@ class RatingController extends GetxController {
 
       isLoading.value = true;
       await _userService.pb.collection('ratings').delete(userRating.value!.id);
-      await fetchRatings();
       
       Get.snackbar(
         'Success',

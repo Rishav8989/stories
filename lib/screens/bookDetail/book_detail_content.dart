@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import GetX to use Obx
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
+import 'package:stories/controller/rating_controller.dart';
 import 'package:stories/models/book_model.dart';
 // No longer need dotenv here for the image URL
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,7 +11,9 @@ import 'package:stories/screens/bookDetail/book_detail_info_card.dart';
 import 'package:stories/screens/bookDetail/book_detail_chapters.dart';
 import 'package:stories/screens/bookDetail/discussion_room_screen.dart';
 import 'package:stories/widgets/discussion_room.dart';
-import 'package:stories/widgets/book_rating_widget.dart';
+import 'package:stories/widgets/book_ratings_widget.dart';
+import 'package:stories/widgets/rate_book_widget.dart';
+import 'package:stories/utils/user_service.dart';
 
 class BookDetailContent extends StatelessWidget {
   // Make controller final as it shouldn't change after initialization
@@ -37,6 +40,15 @@ class BookDetailContent extends StatelessWidget {
       final currentBook = controller.book.value ?? book;
       // Get the image URL from the controller
       final imageUrl = controller.getBookCoverThumbnailUrl();
+
+      // Initialize rating controller
+      final ratingController = Get.put(
+        RatingController(
+          userService: Get.find<UserService>(),
+          bookId: currentBook.id,
+        ),
+        tag: currentBook.id,
+      );
 
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -197,8 +209,9 @@ class BookDetailContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Add the rating widget below the discussion room
-                  BookRatingWidget(bookId: currentBook.id),
+                  RateBookWidget(controller: ratingController),
+                  const SizedBox(height: 16),
+                  BookRatingsWidget(controller: ratingController),
                   const SizedBox(height: 32),
                 ],
               ],
