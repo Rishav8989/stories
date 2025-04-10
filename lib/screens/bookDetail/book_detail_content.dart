@@ -9,10 +9,12 @@ import 'package:stories/screens/bookDetail/book_detail_action_buttons.dart';
 import 'package:stories/screens/bookDetail/book_detail_description.dart';
 import 'package:stories/screens/bookDetail/book_detail_info_card.dart';
 import 'package:stories/screens/bookDetail/book_detail_chapters.dart';
+import 'package:stories/screens/bookDetail/book_ratings_page.dart';
 import 'package:stories/screens/bookDetail/discussion_room_screen.dart';
 import 'package:stories/widgets/discussion_room.dart';
 import 'package:stories/widgets/book_ratings_widget.dart';
 import 'package:stories/widgets/rate_book_widget.dart';
+import 'package:stories/widgets/rating_dialog.dart';
 import 'package:stories/utils/user_service.dart';
 
 class BookDetailContent extends StatelessWidget {
@@ -145,11 +147,83 @@ class BookDetailContent extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                // Add book ratings at the top
-                if (currentBook.status == 'published') ...[
-                  BookRatingsWidget(controller: ratingController),
-                  const SizedBox(height: 24),
-                ],
+                // Add tappable average rating at the top
+                if (currentBook.status == 'published')
+                  GestureDetector(
+                    onTap: () {
+                      Get.to(() => BookRatingsPage(controller: ratingController));
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Obx(() {
+                                  final rating = ratingController.averageRating.value;
+                                  final totalRatings = ratingController.totalRatings.value;
+                                  return Column(
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                                        textBaseline: TextBaseline.alphabetic,
+                                        children: [
+                                          Text(
+                                            rating.toStringAsFixed(1),
+                                            style: textTheme.displayMedium?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: colorScheme.primary,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '/ 5',
+                                            style: textTheme.titleLarge?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: List.generate(5, (index) {
+                                          return Icon(
+                                            index < rating.round() ? Icons.star : Icons.star_border,
+                                            color: Colors.amber,
+                                            size: 24,
+                                          );
+                                        }),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        '$totalRatings ratings',
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap to see all ratings',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.primary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
                 // Pass the reactive book value to child widgets if they need it
                 BookDetailInfoCard(book: currentBook, controller: controller),
                 const SizedBox(height: 24),
