@@ -64,25 +64,120 @@ class BookRatingWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Obx(() => StarRating(
-              rating: controller.userRating.value?.rating ?? 0,
-              onRatingChanged: (rating) => _showRatingDialog(context, controller, rating),
-            )),
-            if (controller.userRating.value != null) ...[
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: () => _showDeleteConfirmation(context, controller),
-                icon: const Icon(Icons.delete_outline, size: 20),
-                label: const Text('Remove Rating'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ],
+            Obx(() {
+              final userRating = controller.userRating.value;
+              if (userRating != null) {
+                return GestureDetector(
+                  onLongPress: () => _showActionMenu(context, controller),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < userRating.rating ? Icons.star : Icons.star_border,
+                            color: Colors.amber,
+                            size: 32,
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Long press to edit or remove rating',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return Column(
+                  children: [
+                    const Text('Share your thoughts by rating this book'),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return InkWell(
+                          onTap: () => _showRatingDialog(context, controller, index + 1),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Icon(
+                              Icons.star_border,
+                              color: Colors.amber,
+                              size: 32,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              }
+            }),
           ],
         ),
       ),
     );
+  }
+
+  void _showActionMenu(BuildContext context, RatingController controller) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem<String>(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(
+                Icons.edit,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text('Edit Rating'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'remove',
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text('Remove Rating'),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'edit') {
+        _showRatingDialog(
+          context,
+          controller,
+          controller.userRating.value?.rating ?? 0,
+        );
+      } else if (value == 'remove') {
+        _showDeleteConfirmation(context, controller);
+      }
+    });
   }
 
   Future<void> _showRatingDialog(

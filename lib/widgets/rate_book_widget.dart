@@ -4,27 +4,25 @@ import 'package:stories/controller/rating_controller.dart';
 
 class RateBookWidget extends StatelessWidget {
   final RatingController controller;
+  final showActions = false.obs;
 
-  const RateBookWidget({
+  RateBookWidget({
     Key? key,
     required this.controller,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
+      color: Colors.black,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Rate This Book',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
             Obx(() {
               final userRating = controller.userRating.value;
               if (userRating != null) {
@@ -33,66 +31,121 @@ class RateBookWidget extends StatelessWidget {
                   children: [
                     Text(
                       'Your Rating',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        ...List.generate(5, (index) {
-                          return Icon(
-                            index < userRating.rating ? Icons.star : Icons.star_border,
-                            color: Colors.amber,
-                            size: 24,
-                          );
-                        }),
-                        const SizedBox(width: 16),
-                        TextButton.icon(
-                          onPressed: () => _showRatingDialog(
-                            context,
-                            initialRating: userRating.rating,
-                            initialComment: userRating.reviewComment,
+                    GestureDetector(
+                      onLongPress: () => showActions.value = !showActions.value,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                index < userRating.rating ? Icons.star : Icons.star_border,
+                                color: Colors.amber,
+                                size: 24,
+                              );
+                            }),
                           ),
-                          icon: const Icon(Icons.edit, size: 20),
-                          label: const Text('Edit'),
-                        ),
-                        TextButton.icon(
-                          onPressed: () => _showDeleteConfirmation(context),
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          label: const Text('Remove'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (userRating.reviewComment != null &&
-                        userRating.reviewComment!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your Review:',
-                        style: Theme.of(context).textTheme.titleSmall,
+                          if (userRating.reviewComment != null &&
+                              userRating.reviewComment!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              userRating.reviewComment!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                          Obx(() => showActions.value
+                              ? Column(
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        TextButton.icon(
+                                          onPressed: () {
+                                            showActions.value = false;
+                                            _showRatingDialog(
+                                              context,
+                                              userRating.rating,
+                                              userRating.reviewComment,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 20,
+                                            color: Colors.blue,
+                                          ),
+                                          label: Text(
+                                            'Edit',
+                                            style: theme.textTheme.bodyMedium?.copyWith(
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        TextButton.icon(
+                                          onPressed: () {
+                                            showActions.value = false;
+                                            _showDeleteConfirmation(context);
+                                          },
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            size: 20,
+                                            color: Colors.red,
+                                          ),
+                                          label: Text(
+                                            'Remove',
+                                            style: theme.textTheme.bodyMedium?.copyWith(
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    'Long press to edit or remove',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: Colors.white38,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                )),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(userRating.reviewComment!),
-                    ],
+                    ),
                   ],
                 );
               } else {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Share your thoughts by rating this book'),
-                    const SizedBox(height: 8),
+                    Text(
+                      'Rate This Book',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (index) {
                         return InkWell(
-                          onTap: () => _showRatingDialog(context, initialRating: index + 1),
+                          onTap: () => _showRatingDialog(context, index + 1, null),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            padding: const EdgeInsets.only(right: 4),
                             child: Icon(
                               Icons.star_border,
                               color: Colors.amber,
-                              size: 32,
+                              size: 24,
                             ),
                           ),
                         );
@@ -109,18 +162,18 @@ class RateBookWidget extends StatelessWidget {
   }
 
   Future<void> _showRatingDialog(
-    BuildContext context, {
-    required int initialRating,
+    BuildContext context,
+    int initialRating,
     String? initialComment,
-  }) async {
-    int selectedRating = initialRating;
+  ) async {
+    int rating = initialRating;
     final commentController = TextEditingController(text: initialComment);
 
     return showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text('Rate ${selectedRating.toString()} Stars'),
+          title: Text('Rate ${rating.toString()} Stars'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -128,11 +181,11 @@ class RateBookWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
                   return InkWell(
-                    onTap: () => setState(() => selectedRating = index + 1),
+                    onTap: () => setState(() => rating = index + 1),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: Icon(
-                        index < selectedRating ? Icons.star : Icons.star_border,
+                        index < rating ? Icons.star : Icons.star_border,
                         color: Colors.amber,
                         size: 32,
                       ),
@@ -157,9 +210,10 @@ class RateBookWidget extends StatelessWidget {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                controller.rateBook(selectedRating, comment: commentController.text);
+              onPressed: () async {
+                await controller.rateBook(rating, comment: commentController.text);
                 Navigator.of(context).pop();
+                Get.back(result: true);
               },
               child: const Text('Submit'),
             ),
@@ -181,9 +235,10 @@ class RateBookWidget extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              controller.deleteRating();
+            onPressed: () async {
+              await controller.deleteRating();
               Navigator.of(context).pop();
+              Get.back(result: true);
             },
             child: Text(
               'Remove',
