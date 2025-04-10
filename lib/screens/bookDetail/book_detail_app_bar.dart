@@ -46,7 +46,7 @@ class BookDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   final items = <PopupMenuItem<String>>[];
                   
                   // Add library actions for non-authors
-                  if (book.author != controller.userId) {
+                  if (book.author != controller.userId && controller.userId != null) {
                     final isInLibrary = libraryController.isInLibrary(book.id);
                     items.add(
                       PopupMenuItem<String>(

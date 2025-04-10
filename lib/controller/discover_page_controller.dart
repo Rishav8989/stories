@@ -3,22 +3,39 @@ import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:stories/utils/user_service.dart';
+import 'package:stories/controller/library_controller.dart';
 
 class DiscoverController extends GetxController {
   final books = <RecordModel>[].obs;
   final userBooks = <RecordModel>[].obs;
+  final libraryBooks = <RecordModel>[].obs;
   final isLoading = true.obs;
   String? errorMessage;
   
   final UserService _userService = UserService(PocketBase(dotenv.get('POCKETBASE_URL')));
+  late final LibraryController _libraryController;
   UnsubscribeFunc? _booksSubscription;
   UnsubscribeFunc? _userBooksSubscription;
+  UnsubscribeFunc? _librarySubscription;
 
   @override
   void onInit() {
     super.onInit();
+    _initializeLibraryController();
     fetchInitialData();
     _subscribeToBooksChanges();
+  }
+
+  Future<void> _initializeLibraryController() async {
+    try {
+      final userId = await _userService.getUserId();
+      if (userId != null) {
+        _libraryController = Get.find<LibraryController>();
+        await _libraryController.fetchLibraryItems();
+      }
+    } catch (e) {
+      debugPrint('Error initializing library controller: $e');
+    }
   }
 
   @override
@@ -26,6 +43,7 @@ class DiscoverController extends GetxController {
     // Cancel the subscriptions
     _booksSubscription?.call();
     _userBooksSubscription?.call();
+    _librarySubscription?.call();
     // Remove the pb.close() call since PocketBase doesn't have this method
     super.onClose();
   }
@@ -93,6 +111,25 @@ class DiscoverController extends GetxController {
               break;
           }
         });
+
+        // Subscribe to library changes
+        _librarySubscription = await _userService.pb
+            .collection('library_items')
+            .subscribe('*', (e) {
+          final record = e.record;
+          if (record == null) return;
+          
+          if (record.data['user'] != userId) return;
+
+          switch (e.action) {
+            case 'create':
+              fetchLibraryBooks();
+              break;
+            case 'delete':
+              fetchLibraryBooks();
+              break;
+          }
+        });
       }
     } catch (e) {
       debugPrint('Error setting up realtime subscriptions: $e');
@@ -102,11 +139,19 @@ class DiscoverController extends GetxController {
   Future<void> fetchInitialData() async {
     try {
       isLoading.value = true;
-      // Use Future.wait to load both in parallel
-      await Future.wait([
-        fetchBooks(),
-        fetchUserBooks(),
-      ]);
+      errorMessage = null;
+      
+      // Always fetch published books
+      await fetchBooks();
+      
+      // Only fetch user-specific data if logged in
+      final userId = await _userService.getUserId();
+      if (userId != null) {
+        await Future.wait([
+          fetchUserBooks(),
+          fetchLibraryBooks(),
+        ]);
+      }
     } catch (e) {
       errorMessage = 'Failed to load books. Please try again.';
       debugPrint('Error fetching initial data: $e');
@@ -121,33 +166,64 @@ class DiscoverController extends GetxController {
         page: 1,
         perPage: 50,
         filter: 'status = "published"',
-        sort: '-updated', // Sort by updated date in descending order
+        sort: '-updated',
       );
 
       books.value = resultList.items;
     } catch (e) {
       debugPrint('Error fetching books: $e');
-      rethrow; // Let fetchInitialData handle the error
+      rethrow;
     }
   }
 
   Future<void> fetchUserBooks() async {
     try {
       final userId = await _userService.getUserId();
+      if (userId == null) return;
       
-      if (userId != null) {
-        final resultList = await _userService.pb.collection('books').getList(
-          page: 1,
-          perPage: 50,
-          filter: 'author = "$userId" && status = "published"',
-          sort: '-updated', // Sort by updated date in descending order
-        );
+      final resultList = await _userService.pb.collection('books').getList(
+        page: 1,
+        perPage: 50,
+        filter: 'author = "$userId" && status = "published"',
+        sort: '-updated',
+      );
 
-        userBooks.value = resultList.items;
-      }
+      userBooks.value = resultList.items;
     } catch (e) {
       debugPrint('Error fetching user books: $e');
-      rethrow; // Let fetchInitialData handle the error
+      rethrow;
+    }
+  }
+
+  Future<void> fetchLibraryBooks() async {
+    try {
+      final userId = await _userService.getUserId();
+      if (userId == null) return;
+      
+      final libraryItems = await _userService.pb.collection('library_items').getList(
+        page: 1,
+        perPage: 50,
+        filter: 'user = "$userId"',
+        expand: 'book',
+      );
+
+      final bookRecords = <RecordModel>[];
+      for (final item in libraryItems.items) {
+        if (item.data['book'] != null) {
+          final bookData = item.expand['book'];
+          if (bookData is List) {
+            final firstBook = (bookData as List?)?.firstOrNull;
+            if (firstBook != null) {
+              bookRecords.add(firstBook as RecordModel);
+            }
+          }
+        }
+      }
+
+      libraryBooks.value = bookRecords;
+    } catch (e) {
+      debugPrint('Error fetching library books: $e');
+      rethrow;
     }
   }
 

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:stories/controller/font_controller.dart';
 import 'package:stories/controller/bookDetails/book_details_page_controller.dart';
 import 'package:stories/controller/library_controller.dart';
+import 'dart:io' show Platform;
 
 class AppInitializer {
   static Future<void> init() async {
@@ -58,9 +59,17 @@ class AppInitializer {
   }
 
   static Future<void> _requestPermissions() async {
-    // Request storage permission for caching images
-    await Permission.storage.request();
-    // Request internet connectivity permission
-    await Permission.accessMediaLocation.request();
+    try {
+      // Only request permissions on mobile platforms
+      if (Platform.isAndroid || Platform.isIOS) {
+        // Request storage permission for caching images
+        await Permission.storage.request();
+        // Request internet connectivity permission
+        await Permission.accessMediaLocation.request();
+      }
+    } catch (e) {
+      print('Permission request error: $e');
+      // Continue without permissions on desktop platforms
+    }
   }
 }
