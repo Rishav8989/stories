@@ -144,7 +144,12 @@ class BookDetailContent extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                // Add book ratings at the top
+                if (currentBook.status == 'published') ...[
+                  BookRatingsWidget(controller: ratingController),
+                  const SizedBox(height: 24),
+                ],
                 // Pass the reactive book value to child widgets if they need it
                 BookDetailInfoCard(book: currentBook, controller: controller),
                 const SizedBox(height: 24),
@@ -209,9 +214,8 @@ class BookDetailContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Keep user rating widget at the bottom
                   RateBookWidget(controller: ratingController),
-                  const SizedBox(height: 16),
-                  BookRatingsWidget(controller: ratingController),
                   const SizedBox(height: 32),
                 ],
               ],
