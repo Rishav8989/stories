@@ -10,6 +10,7 @@ import 'package:stories/screens/bookDetail/book_detail_info_card.dart';
 import 'package:stories/screens/bookDetail/book_detail_chapters.dart';
 import 'package:stories/screens/bookDetail/discussion_room_screen.dart';
 import 'package:stories/widgets/discussion_room.dart';
+import 'package:stories/widgets/book_rating_widget.dart';
 
 class BookDetailContent extends StatelessWidget {
   // Make controller final as it shouldn't change after initialization
@@ -196,7 +197,9 @@ class BookDetailContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Removed chat messages, keeping only the Discussion Room widget
+                  // Add the rating widget below the discussion room
+                  BookRatingWidget(bookId: currentBook.id),
+                  const SizedBox(height: 32),
                 ],
               ],
             ),

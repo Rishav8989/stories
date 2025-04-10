@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:stories/controller/chapter_controller.dart';
 import 'package:stories/screens/chapter/edit_chapter_page.dart';
 import 'package:stories/utils/reading_time_calculator.dart';
+import 'package:stories/utils/user_service.dart';
 
 class ChapterContentPage extends StatefulWidget {
   final String chapterId;
@@ -27,14 +28,22 @@ class _ChapterContentPageState extends State<ChapterContentPage> {
   final RxDouble _scrollProgress = 0.0.obs;
   final RxBool _isLoadingPrevious = false.obs;
   final RxBool _isLoadingNext = false.obs;
+  final RxBool _isAuthor = false.obs;
   late final ChapterController controller;
+  late final UserService _userService;
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(ChapterController());
+    _userService = Get.find<UserService>();
     _scrollController.addListener(_updateScrollProgress);
     _loadChapterContent();
+    _checkIfAuthor();
+  }
+
+  Future<void> _checkIfAuthor() async {
+    _isAuthor.value = await controller.isBookOwner(widget.bookId);
   }
 
   Future<void> _loadChapterContent() async {
@@ -200,26 +209,30 @@ class _ChapterContentPageState extends State<ChapterContentPage> {
               )),
             ),
             actions: [
-              if (widget.status == 'draft')
-                Obx(() => IconButton(
-                  icon: controller.isLoading.value 
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Icon(Icons.publish),
-                  tooltip: 'Publish chapter',
-                  onPressed: controller.isLoading.value ? null : () => _showPublishDialog(context),
-                )),
-              IconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: 'Edit chapter',
-                onPressed: () => _navigateToEdit(context),
-              ),
+              Obx(() => _isAuthor.value ? Row(
+                children: [
+                  if (widget.status == 'draft')
+                    IconButton(
+                      icon: controller.isLoading.value 
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.publish),
+                      tooltip: 'Publish chapter',
+                      onPressed: controller.isLoading.value ? null : () => _showPublishDialog(context),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: 'Edit chapter',
+                    onPressed: () => _navigateToEdit(context),
+                  ),
+                ],
+              ) : const SizedBox.shrink()),
             ],
           ),
           SliverToBoxAdapter(

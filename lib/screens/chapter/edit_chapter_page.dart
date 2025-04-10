@@ -39,8 +39,9 @@ class _EditChapterPageState extends State<EditChapterPage> {
     contentController = TextEditingController(text: widget.initialContent);
     _updateCounts(widget.initialContent);
     
-    // Initialize ChapterController
+    // Initialize ChapterController and check permissions
     controller = Get.find<ChapterController>();
+    _checkPermissions();
 
     // Add listeners for detecting changes
     titleController.addListener(() {
@@ -51,6 +52,20 @@ class _EditChapterPageState extends State<EditChapterPage> {
       _onContentChanged();
       _updateCounts(contentController.text);
     });
+  }
+
+  Future<void> _checkPermissions() async {
+    final isAuthor = await controller.isBookOwner(widget.bookId);
+    if (!isAuthor) {
+      Get.back();
+      Get.snackbar(
+        'Access Denied',
+        'Only the author can edit chapters',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    }
   }
 
   void _updateCounts(String text) {
