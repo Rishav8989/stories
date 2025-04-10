@@ -31,13 +31,15 @@ class BookRatingWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Rate This Book',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  'Book Rating',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Obx(() => Text(
-                  '${controller.totalRatings} ratings',
+                  controller.totalRatings.value == 0 
+                    ? 'Not Yet Rated'
+                    : '${controller.totalRatings} ratings',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -45,21 +47,26 @@ class BookRatingWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Obx(() => AverageRatingDisplay(
-                  rating: controller.averageRating.value,
-                  totalRatings: controller.totalRatings.value,
-                )),
-              ],
-            ),
+            Obx(() {
+              if (controller.totalRatings.value == 0) {
+                return const SizedBox.shrink();
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AverageRatingDisplay(
+                    rating: controller.averageRating.value,
+                    totalRatings: controller.totalRatings.value,
+                  ),
+                ],
+              );
+            }),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
             Text(
               'Your Rating',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -77,7 +84,7 @@ class BookRatingWidget extends StatelessWidget {
                           return Icon(
                             index < userRating.rating ? Icons.star : Icons.star_border,
                             color: Colors.amber,
-                            size: 32,
+                            size: 28,
                           );
                         }),
                       ),
@@ -107,7 +114,7 @@ class BookRatingWidget extends StatelessWidget {
                             child: Icon(
                               Icons.star_border,
                               color: Colors.amber,
-                              size: 32,
+                              size: 28,
                             ),
                           ),
                         );
